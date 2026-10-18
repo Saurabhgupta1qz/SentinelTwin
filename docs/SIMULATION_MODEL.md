@@ -1,120 +1,230 @@
-# SentinelTwin — Digital Twin Mathematical Simulation Model (SIMULATION_MODEL)
+# SentinelTwin — Simulation Model (SIMULATION_MODEL)
 
-**Document ID:** SIM-001  
-**Project:** SentinelTwin  
-**Engine:** NetworkX Directed Acyclic Graph (DAG) Traversal  
-**Version:** 1.0.0  
+**Project:** SentinelTwin (AZINHACK '26)
+**Version:** 1.1.0 (aligned to the running backend)
+**Reference stack:** PayNest fintech (fictional)
 
----
-
-## 1. Graph Semantics & Formal Definitions
-
-### 1.1 The Infrastructure Graph $G$
-We model an organization's infrastructure as a directed finite graph:
-$$G = (V, E)$$
-Where:
-- $V = \{v_1, v_2, \dots, v_n\}$ is the set of service nodes (internal services and external dependencies).
-- $E \subseteq V \times V$ is the set of directed dependency edges.
-
-### 1.2 Edge Direction Convention
-An edge $e = (u, v) \in E$ denotes that **Service $u$ depends on Service $v$**.
-- $u = \text{source}(e)$ (Dependent service)
-- $v = \text{target}(e)$ (Upstream provider or infrastructure dependency)
-
-> **Failure Propagation Invariant:**  
-> If an upstream provider $v$ fails or degrades, the failure propagates **against** the directed edge into $u$, and from $u$ into all services that depend on $u$.  
-> Formally, the propagation direction is identical to forward path traversal in the **reversed graph** $G_{rev} = (V, E_{rev})$ where $E_{rev} = \{(v, u) \mid (u, v) \in E\}$.
+> **Supersedes v1.0.** The earlier version described a 12-node graph, a Cascade Impact Score of 4.85,
+> 18,400 users at risk and a 93.5% reduction. None of those values are produced by the implemented
+> backend, and they could not be derived from the formulas in v1.0. This version documents what
+> `POST /api/simulation/propagate` and `POST /api/simulation/mitigate` actually return.
+> Items that could not be confirmed from API output are marked **VERIFY IN CODE**.
 
 ---
 
-## 2. Node Attributes & Parameter Weights
+## 1. Purpose and honesty rules
 
-Each node $v \in V$ is characterized by the tuple:
-$$\mathcal{N}(v) = \langle \text{Name}_v, \text{Category}_v, \text{Crit}_v, U_v, S_v, F_v \rangle$$
+The simulator is a **scenario model** over a configured dependency graph. It does not predict real
+outages and does not read real telemetry.
 
-Where:
-- $\text{Crit}_v \in \{\text{MISSION\_CRITICAL}, \text{HIGH}, \text{MEDIUM}, \text{LOW}\}$ is the service criticality.
-- $W(\text{Crit}_v) \in [0.25, 1.00]$ is the numeric criticality weight:
-  $$W(\text{Crit}_v) = \begin{cases} 
-  1.00 & \text{if } \text{MISSION\_CRITICAL} \\
-  0.75 & \text{if } \text{HIGH} \\
-  0.50 & \text{if } \text{MEDIUM} \\
-  0.25 & \text{if } \text{LOW}
-  \end{cases}$$
-- $U_v \in \mathbb{N}$ is the baseline concurrent active user count utilizing service $v$.
-- $S_v \in [0.0, 1.0]$ is the current operational failure factor ($0.0 = \text{Healthy}$, $0.5 = \text{Degraded}$, $1.0 = \text{Failed}$).
-- $F_v \in V \cup \{\emptyset\}$ is the optional redundant fallback node ID.
+| Class | Meaning | Examples here |
+| :--- | :--- | :--- |
+| REAL | Retrieved from the web with source and timestamp | Evidence items from TinyFish |
+| COMPUTED | Deterministic output of the model | Blast radius, weighted impact score, deltas |
+| SIMULATED | Assumed input to the model | Per-node weights, user counts, population, "sub-billing is not migrated" |
+
+API responses are tagged `provenance: COMPUTED`. Because the inputs are simulated, the UI should
+describe results as **"computed from simulated inputs"**, never as measured production figures.
 
 ---
 
-## 3. Failure Propagation Algorithm
+## 2. Graph semantics
 
-### 3.1 Downstream Blast Radius Discovery
-Given a root-cause failing node $v_{\text{root}} \in V$ with failure factor $S_{v_{\text{root}}} \in (0, 1]$:
+- Graph `G = (V, E)`, directed. Edge `A -> B` means **A depends on B**.
+- If B fails, impact flows against the edge to A, then to everything that depends on A.
+- Implementation idea: take descendants of the failed node in the **reversed** graph.
+- The graph must be acyclic. The backend rejects cycles, self-loops and edges to unknown nodes
+  (covered by `test_reject_cycles_graph_invalid`, `test_reject_self_loop`, `test_reject_dangling_edge`).
 
-```python
-def compute_downstream_blast_radius(G: nx.DiGraph, root_node: str, severity: float):
-    # 1. Reverse graph to traverse downstream along dependency path
-    G_rev = G.reverse(copy=False)
-    
-    # 2. Discover all reachable downstream descendants via BFS
-    descendants = nx.descendants(G_rev, root_node)
-    
-    # 3. Construct blast radius set
-    blast_radius = {root_node}.union(descendants)
-    
-    # 4. Compute shortest propagation paths for explainability
-    propagation_paths = {}
-    for target in descendants:
-        propagation_paths[target] = nx.shortest_path(G_rev, source=root_node, target=target)
-        
-    return blast_radius, propagation_paths
+### 2.1 Reference graph (from `GET /api/environment`)
+
+| Node ID | Name | Category | Criticality |
+| :--- | :--- | :--- | :--- |
+| `stripe-primary` | Stripe Primary Gateway | PAYMENT_GATEWAY | MISSION_CRITICAL |
+| `razorpay-backup` | Razorpay Backup Gateway | PAYMENT_GATEWAY | HIGH |
+| `payment-router` | Payment Routing Service | API_BACKEND | HIGH |
+| `checkout-api` | Checkout API Service | API_BACKEND | MISSION_CRITICAL |
+| `order-service` | Order Processing Engine | API_BACKEND | HIGH |
+| `sub-billing` | Subscription Billing Worker | API_BACKEND | MEDIUM |
+| `auth-service` | Customer Authentication | AUTH_PROVIDER | HIGH |
+| `portal-web` | PayNest Web Portal | FRONTEND_CLIENT | MEDIUM |
+
+8 nodes, 5 edges:
+
+| Source (depends on) | Target (dependency) |
+| :--- | :--- |
+| `payment-router` | `stripe-primary` |
+| `checkout-api` | `payment-router` |
+| `order-service` | `checkout-api` |
+| `sub-billing` | `stripe-primary` |
+| `portal-web` | `auth-service` |
+
+```mermaid
+graph LR
+    payment-router --> stripe-primary
+    checkout-api --> payment-router
+    order-service --> checkout-api
+    sub-billing --> stripe-primary
+    portal-web --> auth-service
+    razorpay-backup:::standby
+    classDef standby stroke-dasharray: 4 3
 ```
 
----
-
-## 4. Derived Metric Formulas
-
-### 4.1 Cascade Impact Score ($CIS$)
-The Cascade Impact Score quantifies organizational blast radius severity into a single normalized index:
-$$CIS = W(\text{Crit}_{v_{\text{root}}}) \times S_{v_{\text{root}}} + \sum_{d \in \text{descendants}(G_{rev}, v_{\text{root}})} W(\text{Crit}_d) \times \text{Attenuation}(d)$$
-
-Where $\text{Attenuation}(d)$ accounts for distance hops $h(v_{\text{root}}, d)$ in the DAG:
-$$\text{Attenuation}(d) = \left( \frac{1}{1 + 0.1 \times (h - 1)} \right) \times S_{v_{\text{root}}}$$
-
-### 4.2 Estimated Users at Risk ($EUR$)
-The estimated total concurrent users impacted by the upstream outage:
-$$EUR = \sum_{d \in \text{descendants}(G_{rev}, v_{\text{root}})} U_d$$
-*(Deduplication ensures users active on shared microservices are counted accurately without double-inflating totals).*
-
-### 4.3 Simulated Transaction Failure Rate ($TFR$)
-For financial services pipelines, $TFR$ estimates checkout drop-off:
-$$TFR = \min\left(100\%, \quad \left( \frac{EUR}{\sum_{v \in V_{\text{consumer}}} U_v} \right) \times S_{v_{\text{root}}} \times 100 \right)$$
+`razorpay-backup` has no dependents in the base graph. It is used only by the failover scenario.
+`auth-service` and `portal-web` are unaffected by a Stripe failure.
 
 ---
 
-## 5. Recovery Mitigation Simulation & Rewiring Logic
+## 3. Failure propagation
 
-When an operator evaluates a mitigation lever (e.g. failing over from `srv-stripe-primary` to `srv-razorpay-backup`):
+Given a failed root node:
 
-### 5.1 Dynamic Graph Rewiring Algorithm
-1. Clone graph $G \rightarrow G_{\text{mitigated}}$.
-2. For each node $u$ such that $(u, v_{\text{root}}) \in E(G)$:
-   - Remove edge $(u, v_{\text{root}})$.
-   - Add redirected edge $(u, F_{v_{\text{root}}})$ where $F_{v_{\text{root}}}$ is the active fallback node.
-3. Mark $F_{v_{\text{root}}}$ as active and healthy ($S_{F} = 0.0$).
-4. Re-run propagation on $G_{\text{mitigated}}$ from $v_{\text{root}}$.
-5. Compute **Mitigated Cascade Score ($CIS_{\text{mitigated}}$)** and **Mitigated Users at Risk ($EUR_{\text{mitigated}}$)**.
+1. Find all nodes that transitively depend on it (descendants in the reversed graph).
+2. Blast radius = root + those descendants.
+3. For each descendant, record the shortest path (`propagation_paths`) and hop count `h`.
+4. Attenuation per node: `attenuation = 1 / (1 + 0.1 * (h - 1))`.
 
-### 5.2 Comparative Delta Metrics
-$$\Delta \text{Service Recovery (\%)} = \left( 1 - \frac{|\text{BlastRadius}_{\text{mitigated}}|}{|\text{BlastRadius}_{\text{baseline}}|} \right) \times 100$$
-$$\Delta \text{User Risk Reduction (\%)} = \left( 1 - \frac{EUR_{\text{mitigated}}}{EUR_{\text{baseline}}} \right) \times 100$$
+Verified against API output:
 
-### 5.3 Concrete Reference Case (PayPulse Stack)
-
-| Metric | Pre-Mitigation Outage (Stripe Failed) | Post-Mitigation (Razorpay Failover) | Delta / Recovery |
+| Node | Hops | Attenuation reported | Formula result |
 | :--- | :--- | :--- | :--- |
-| **Impacted Nodes** | 5 nodes (`Checkout`, `Order`, `Sub`, `Portal`, `Stripe`) | 1 node (`Stripe` remains down; all internal recover) | **80% Recovery** |
-| **Cascade Score ($CIS$)** | 4.85 | 1.00 | **79.4% Reduction** |
-| **Users at Risk ($EUR$)** | 18,400 concurrent users | 1,200 users (unmigrated webhook cron) | **93.5% Reduction** |
-| **Est. Failure Rate ($TFR$)** | 34.2% | 1.8% | **94.7% Improvement** |
+| `payment-router` | 1 | 1.0 | 1.0 |
+| `sub-billing` | 1 | 1.0 | 1.0 |
+| `checkout-api` | 2 | 0.9091 | 0.9091 |
+| `order-service` | 3 | 0.8333 | 0.8333 |
+
+---
+
+## 4. Metrics (observed from `/api/simulation/propagate`, root = `stripe-primary`, severity 1.0)
+
+### 4.1 Weighted impact score (W)
+
+Observed: **W = 23.2**, equal to the plain sum of per-node weight contributions:
+
+| Node | weight_contribution |
+| :--- | :--- |
+| `stripe-primary` (root) | 10.0 *(inferred: not in the response; 23.2 − 13.2)* |
+| `payment-router` | 6.0 |
+| `checkout-api` | 5.0 |
+| `order-service` | 2.0 |
+| `sub-billing` | 0.2 |
+| **Total** | **23.2** |
+
+Notes:
+- Contributions are **not** derived from the criticality levels (`payment-router` is HIGH but weighs
+  more than MISSION_CRITICAL `checkout-api`). They behave like per-node business weights, which are
+  **SIMULATED** inputs.
+- The response also reports `attenuation`, but the sum above matches without applying it.
+  **VERIFY IN CODE** whether attenuation is folded into the contributions or used elsewhere.
+- The root weight of 10.0 is inferred from the arithmetic. **VERIFY IN CODE.**
+
+### 4.2 Users at risk
+
+Observed: sum of per-node `users_at_risk` over affected nodes:
+
+| Node | users_at_risk |
+| :--- | :--- |
+| `checkout-api` | 1,200 |
+| `order-service` | 564 |
+| `payment-router` | 0 |
+| `sub-billing` | 200 |
+| **Total** | **1,964** |
+
+- Percentage reported: **19.6%**. This implies a simulated population of 10,000 users
+  (1,964 / 10,000). **VERIFY IN CODE.**
+- How each node's user count is derived (for example 564 for `order-service`) is not visible in the
+  API output. **VERIFY IN CODE.**
+
+### 4.3 Transaction failure and success rate
+
+Observed: failure 11.3%, success 88.7% (baseline); failure 1.2%, success 98.8% (mitigated).
+The formula is **not recoverable from the output**. **VERIFY IN CODE** and document it here.
+Treat these as **SIMULATED** until the formula is documented.
+
+### 4.4 Rounding
+
+Values are rounded half-up (`test_round_half_up`).
+
+---
+
+## 5. Recovery scenario: failover to Razorpay
+
+`POST /api/simulation/mitigate` with `failed_node_id = stripe-primary`,
+`target_fallback_id = razorpay-backup`.
+
+Modeled behavior:
+- Traffic that depended on Stripe through `payment-router` is redirected to `razorpay-backup`.
+  `payment-router`, `checkout-api` and `order-service` recover.
+- `sub-billing` is modeled as **not migrated** (for example, recurring-billing webhooks still point at
+  Stripe). This is a **SIMULATED ASSUMPTION** and must be shown as such in the UI.
+- `stripe-primary` itself remains failed, so it still counts as affected.
+
+### 5.1 Baseline vs mitigated
+
+| Metric | Baseline (Stripe down) | Mitigated (failover) | Change |
+| :--- | :--- | :--- | :--- |
+| Affected services | 5 | 2 (`stripe-primary`, `sub-billing`) | 3 restored (60%) |
+| Weighted impact score | 23.2 | 10.2 (= 10.0 + 0.2) | −56.0% |
+| Users at risk | 1,964 (19.6%) | 200 (2.0%) | −89.8% (1,764 restored) |
+| Transaction success rate | 88.7% | 98.8% | +10.1 percentage points |
+| Transaction failure rate | 11.3% | 1.2% | −10.1 percentage points |
+
+Delta formulas (verified against output):
+- Weighted impact reduction = (23.2 − 10.2) / 23.2 = 56.0%
+- User risk reduction = (1,964 − 200) / 1,964 = 89.8%
+- Services restored = 5 − 2 = 3
+
+> **Correction needed in README:** it lists the mitigated impacted services as "1 service" with an
+> 80% recovery. The API reports 2 affected services (the failed gateway still counts) and
+> `services_restored = 3`, which is a 60% reduction.
+
+---
+
+## 6. Ranked action plan
+
+Returned by `/api/simulation/mitigate` as rule-based items. Both require human approval.
+
+| Priority | Action | Target | Expected impact (simulated) |
+| :--- | :--- | :--- | :--- |
+| P0 | Enable standby gateway failover route | `razorpay-backup` | 1,764 users restored (89.8%) |
+| P1 | Pause recurring subscription billing retries | `sub-billing` | Avoids a webhook retry storm |
+
+The `runbook_command` strings (`aws ssm ...`, `kubectl ...`) are **illustrative** and reference a
+fictional document and namespace. The UI must label them "illustrative example, not executed".
+SentinelTwin never runs them.
+
+---
+
+## 7. Limitations
+
+- Weights, user counts, population and the "sub-billing not migrated" assumption are invented for the
+  demo. Results show how the model behaves, not what a real PayNest would lose.
+- The model assumes a failed provider is fully unavailable at severity 1.0 and does not model partial
+  capacity of the backup gateway.
+- Fallback capacity, retries and latency are not modeled.
+- Evidence from TinyFish informs which node to fail; it does not change the arithmetic.
+
+---
+
+## 8. Open items to confirm in the code
+
+1. Root node weight (inferred 10.0) and where per-node weights are defined.
+2. Whether attenuation is applied to weights or user counts.
+3. Derivation of per-node `users_at_risk` and the 10,000 population.
+4. Formula for transaction failure rate.
+5. How `sub-billing` is flagged as not migrated.
+6. Severity handling when `severity_factor` is below 1.0.
+
+---
+
+## 9. Reproduce the reference numbers (PowerShell)
+
+```powershell
+$b1 = '{"root_cause_node_id":"stripe-primary","severity_factor":1.0}'
+Invoke-RestMethod -Method Post -Uri http://localhost:8000/api/simulation/propagate -ContentType "application/json" -Body $b1 | ConvertTo-Json -Depth 10
+
+$b2 = '{"failed_node_id":"stripe-primary","mitigation_action":"FAILOVER_BACKUP","target_fallback_id":"razorpay-backup"}'
+Invoke-RestMethod -Method Post -Uri http://localhost:8000/api/simulation/mitigate -ContentType "application/json" -Body $b2 | ConvertTo-Json -Depth 10
+```
+
+Automated check: `python -m pytest backend/tests/ -v` (see `test_golden_values_reproduction`).

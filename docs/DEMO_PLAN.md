@@ -1,55 +1,126 @@
-# SentinelTwin — 3-Minute Hackathon Demo Script & Contingency Plan (DEMO_PLAN)
+# SentinelTwin — 3-Minute Demo Plan (DEMO_PLAN)
 
-**Document ID:** DEMO-001  
-**Project:** SentinelTwin  
-**Event:** Kritical Hacks 2026 Presentation  
-**Target Duration:** Exactly 3 Minutes (180 Seconds)  
-**Presenter:** Incident Commander / Lead Architect  
-**Version:** 1.0.0  
+**Event:** AZINHACK '26
+**Version:** 1.1.0 (aligned to the running backend)
+**Duration:** 180 seconds
+**Stack shown:** PayNest fintech (fictional), 8 services
 
----
-
-## 1. Demo Narrative Arc: The $500k/Hour Checkout Outage
-
-**Opening Hook (0:00 - 0:25):**
-> *"Judges, when Stripe or AWS has an outage, tools like IsDown or StatusGator tell you their service is down. But they can't answer the only question your executive team cares about: **What does this mean for OUR business, and how do we recover before our users feel it?** This is SentinelTwin."*
+Numbers below come from the running backend (see `SIMULATION_MODEL.md`). They are **computed from
+simulated inputs**. Say so out loud once during the demo.
 
 ---
 
-## 2. Second-by-Second Presentation Script
+## 1. Rules for the presenter
 
-| Timestamp | Screen State | Action & Narration | Visual Focus |
-| :--- | :--- | :--- | :--- |
-| **0:00 – 0:30** | Dashboard Canvas | **Context:** *"Here is PayPulse, a mid-market fintech processing $500k/hour. Notice our 12 interconnected services on the digital twin canvas: checkout, order processing, databases, and our primary gateway Stripe, backed by a standby gateway Razorpay. Everything is currently green and healthy."* | 12-node DAG canvas in sleek dark mode |
-| **0:30 – 1:00** | Live Web Scan | **TinyFish Investigation:** *"Now, watch this. I click 'Start Live Investigation'. SentinelTwin unleashes TinyFish's AI web search and headless fetch across developer advisories and status pages. Within seconds, TinyFish detects breaking news: Stripe is experiencing elevated 500 error rates on card tokenization endpoints."* | Real-time SSE execution logs streaming in bottom drawer |
-| **1:00 – 1:30** | Blast Radius Active | **Graph Auto-Mapping:** *"SentinelTwin verifies the source against `status.stripe.com`, maps it to our `srv-stripe-primary` node, and our NetworkX digital twin calculates the blast radius. Stripe turns red. But more importantly: our Checkout Service, Order Engine, and Customer Portal immediately turn amber. 5 services impacted. 18,400 active shoppers at risk. 34% projected transaction failure."* | Red failed node with animated amber failure pulses across downstream services |
-| **1:30 – 2:15** | Recovery Lever | **The Hero Moment (Recovery Simulation):** *"Now, instead of guessing or panicking, the incident commander clicks 'Simulate Recovery: Failover to Razorpay'. Watch the canvas: the digital twin dynamically rewires downstream checkout dependencies to the standby gateway. Look at the verified delta: Impacted services drop from 5 to 1. Users at risk plummet from 18,400 down to 1,200—a 93.5% risk reduction. We tested the recovery in our sandbox without risking production."* | Canvas edge re-routes in green. Comparison banner highlights 93.5% risk reduction |
-| **2:15 – 2:45** | AI Incident Brief | **Governance & Audit:** *"With one click, we generate an evidence-grounded incident brief powered by Claude 3.5. Notice that every single claim is backed by exact clickable URLs from our TinyFish crawl. It includes the ranked human-approval runbook command. Zero hallucinations, zero unauthorized production mutations."* | Rendered Markdown brief with hyperlinked sources and copyable AWS SSM runbook |
-| **2:45 – 3:00** | Conclusion | **Closing Pitch:** *"Other tools tell you a provider is down. SentinelTwin tells you what it means for YOUR business, and tests the recovery before your users feel it. SentinelTwin: Know the risk. Simulate the impact. Prepare the recovery. Thank you."* | Tagline card on screen |
+1. Never say "live" unless the badge on screen says live. Read the badge.
+2. Never call replay or fixture data a current outage.
+3. Say "simulated users" and "computed from our model". Do not say "measured".
+4. Do not claim status pages are slow by a fixed number of minutes. Say "official pages can lag
+   early reports" only if you are comfortable it is true for the example shown, and show the
+   timestamps.
+5. Do not say "zero hallucinations". Say "the numbers in the report come from the simulation, not from
+   the language model".
 
 ---
 
-## 3. Contingency Plan & "Plan B" Scenarios
+## 2. Two versions of the script
 
-| Failure Scenario | Immediate Detection Trigger | Instant Contingency Action |
+Pick the version **before** you walk on stage, based on whether the live scan found a real, relevant
+signal during rehearsal.
+
+### Mode A: Live scan found a relevant signal
+
+| Time | Screen | Say / do |
 | :--- | :--- | :--- |
-| **Venue WiFi Disconnect** | Browser network error / SSE fails | Instantly toggle switch in navbar to **`[Historical Replay Mode]`**. The entire demo executes identically using verified local offline fixtures. |
-| **TinyFish API 429 Rate Limit** | HTTP 429 response logged | Backend automatically intercepts and loads `fixtures/tinyfish_stripe_outage.json`. UI logs show `FIXTURE REPLAY` badge. |
-| **Claude API Timeout** | Generation spinner $> 3\text{ seconds}$ | Backend automatically returns pre-compiled Jinja template postmortem in $< 100\text{ ms}$. |
-| **Projector Resolution Glitch** | 1080p canvas scaling issue | Click React Flow "Fit View" button in bottom left controls (`controls.fitView()`) to center all 12 nodes perfectly. |
+| 0:00–0:25 | Dashboard, graph | "Providers tell you *they* are down. We answer what it means for *your* stack. This is PayNest, a fictional fintech: Stripe as primary gateway, Razorpay as backup, a router, checkout, orders, billing, auth, and a web portal." |
+| 0:25–0:55 | Click **Live scan** | "This calls TinyFish Search and Fetch for our providers." Point at the log drawer. Show the badge (live). |
+| 0:55–1:20 | Evidence tab | Open one result: source, publish time, retrieval time, verification grade. "This is a news signal. Only the official page can confirm it." Show the grade honestly. |
+| 1:20–1:50 | Graph | Show which node it maps to and why. Fail `stripe-primary` in the simulation. "5 services affected: router, checkout, orders, subscription billing, and Stripe itself. Weighted impact 23.2. Simulated users at risk 1,964, which is 19.6% of our simulated 10,000." |
+| 1:50–2:30 | **Hero moment** | Click **Apply Razorpay failover mitigation**. "Router, checkout and orders recover. Billing stays affected, because we assumed its webhooks are not migrated. Impact drops to 10.2, users at risk to 200 (2.0%), success rate from 88.7% to 98.8%." |
+| 2:30–2:50 | Postmortem tab | Generate the report. "Evidence links come from the scan. Metrics come from the simulation." Point at the illustrative runbook and the human-approval flag. |
+| 2:50–3:00 | Title card | "Know the risk. Simulate the impact. Prepare the recovery." |
+
+### Mode B: No live signal, use historical replay (or fixture)
+
+Same flow, with these changes:
+
+- At 0:25, click **Historical replay** instead of Live scan.
+- Read the banner aloud: "This is a historical replay, not a live outage."
+- If the replay is a **fictional fixture** (until a real incident is verified), say
+  "fictional incident for demonstration".
+- At 0:25–0:55 do not say TinyFish "just detected" anything.
+- You may still show one real TinyFish call (a live search for a provider) to prove the integration
+  works, and say that no active incident was found.
 
 ---
 
-## 4. Rehearsed Judge Q&A Cheat Sheet
+## 3. Replay incident record (fill before the event)
 
-1. **Q: How is this different from StatusGator or IsDown?**  
-   *A: Status aggregators track global provider status. SentinelTwin maps external evidence to YOUR internal directed service graph, calculates your specific downstream user blast radius, and lets you simulate recovery levers (like secondary gateway failover) before taking action.*
+| Field | Value |
+| :--- | :--- |
+| Incident description | **TODO: verify.** |
+| Official source URL | **TODO** |
+| Start and end time (UTC) | **TODO** |
+| What the source confirms | **TODO** |
+| Verified by / on | **TODO** |
 
-2. **Q: Why use TinyFish instead of just polling status RSS feeds?**  
-   *A: Official status pages often lag 20–45 minutes behind real outages. TinyFish uses live Google web search (`TinySearch`) to catch early-warning developer tweets and news reports, followed by `TinyFetch` headless Chromium rendering to verify un-syndicated status pages.*
+If this table is not filled with a source you opened yourself, treat the replay as a fictional
+fixture and label it that way. Do not name a real provider incident from memory.
 
-3. **Q: Is the data real or simulated?**  
-   *A: We enforce strict data provenance: External web signals and citations are **REAL**. Blast radius paths and recovery percentages are **COMPUTED** mathematically in NetworkX. Baseline user volumes are **SIMULATED** model parameters. Every metric has an origin badge.*
+---
 
-4. **Q: Does SentinelTwin modify production infrastructure?**  
-   *A: Absolutely not. SentinelTwin is strictly a defensive decision-support digital twin. It generates copyable runbooks for human approval, completely eliminating accidental production disruptions.*
+## 4. Rehearsal checklist
+
+- [ ] Run `python -m pytest backend/tests/ -v`: all 16 tests pass.
+- [ ] Run the demo once in Mode A and once in Mode B.
+- [ ] Run Mode B with the network turned off.
+- [ ] Reset the environment between runs.
+- [ ] Record a 3-minute screen capture of Mode B as a backup.
+- [ ] Confirm the UI labels simulated assumptions and shows the replay or fixture badge.
+- [ ] Time the script: stay within 180 seconds.
+
+---
+
+## 5. Contingency plan
+
+| Failure | What you see | Action |
+| :--- | :--- | :--- |
+| Venue WiFi drops | Scan errors | Switch to Mode B. The app falls back to fixtures. Say so. |
+| TinyFish rate limit or error | Warning in log drawer | App uses fixture data and shows the fixture badge. Say "using saved data". |
+| Claude API slow or unavailable | Report spinner | App uses the template report. Say it is the template version. |
+| Graph off-screen on projector | Nodes cut off | Use the graph "fit view" control. |
+| Backend not responding | UI errors | Restart `uvicorn backend.app.main:app --port 8000`. If it fails, play the backup recording. |
+
+---
+
+## 6. Judge Q&A (honest answers)
+
+1. **How is this different from IsDown or StatusGator?**
+   Those tools focus on provider status. SentinelTwin maps an incident to *your* dependency graph,
+   computes impact from your configured weights, and compares recovery options. We have not audited
+   their full feature sets, so we do not claim they lack dependency features.
+
+2. **Why TinyFish when some status pages have APIs?**
+   Not every source has an API. Search finds news and advisories, and Fetch returns clean content from
+   pages that are HTML only. We use official endpoints where they exist.
+
+3. **Is the data real or simulated?**
+   Evidence is real when live, and labeled replay or fixture otherwise. Blast radius and deltas are
+   computed. User counts, weights and the 10,000-user population are simulated inputs.
+
+4. **How is impact calculated?**
+   Failure propagates through the dependency graph. The weighted impact score sums per-node weights
+   over affected nodes. Users at risk sum per-node simulated users. Details are in `SIMULATION_MODEL.md`.
+
+5. **How trustworthy are the recommendations?**
+   They are rule-based and depend on our assumptions. They are advisory and need human approval.
+
+6. **What if no live incident exists?**
+   The scan reports that nothing relevant was found, and we use a labeled replay.
+
+7. **Prompt injection and malicious sites?**
+   Web text is treated as untrusted and isolated in the prompt. The numbers in the report are computed
+   in code. URLs go through an SSRF check (private ranges, loopback, metadata addresses blocked).
+
+8. **Does it change production?**
+   No. It holds no credentials for production systems. The runbook commands are illustrative text.
