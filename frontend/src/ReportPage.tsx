@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { api } from '../api';   // ya './api' agar same folder mein hai
 import {
   FileText,
   Download,
@@ -36,7 +37,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
   useEffect(() => {
     if (!report) {
       setLoading(true);
-      fetch('/api/reports/generate', { method: 'POST' })
+      api('/api/reports/generate', { method: 'POST' })
         .then((res) => res.json())
         .then((data) => {
           setReport(data);

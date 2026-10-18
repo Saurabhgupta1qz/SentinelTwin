@@ -36,6 +36,7 @@ import {
   Download,
   Printer
 } from 'lucide-react';
+import { api } from './api';
 import { ReportPage } from './ReportPage';
 
 interface ServiceNodeData extends Record<string, unknown> {
@@ -216,7 +217,7 @@ export default function App() {
 
   const loadEnvironment = useCallback(async () => {
     try {
-      const res = await fetch('/api/environment');
+      const res = await api('/api/environment');
       const data = await res.json();
       const rfNodes: Node[] = data.nodes.map((n: any) => ({
         id: n.id, type: 'customNode',
@@ -238,13 +239,13 @@ export default function App() {
   const handleHistoricalReplay = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/investigation/replay', { method: 'POST' });
+      const res = await api('/api/investigation/replay', { method: 'POST' });
       const data = await res.json();
       setMode('REPLAY');
       setSimulationData(data.simulation);
       setMitigationData(null);
       setTinyfishProvenance(null);
-      const evRes = await fetch('/api/investigation/evidence');
+      const evRes = await api('/api/investigation/evidence');
       const evData = await evRes.json();
       setEvidenceList(evData.evidence_items || []);
       setNodes(prev => prev.map(node => {
@@ -265,7 +266,7 @@ export default function App() {
   const handleLiveInvestigation = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/investigation/live?provider_name=Stripe%2C%20Inc.', { method: 'POST' });
+      const res = await api('/api/investigation/live?provider_name=Stripe%2C%20Inc.', { method: 'POST' });
       const data = await res.json();
       setMode('LIVE');
       setSimulationData(data.simulation);
@@ -286,7 +287,7 @@ export default function App() {
     setSelectedNodeId(nodeId);
     setLoading(true);
     try {
-      const res = await fetch('/api/simulation/propagate', {
+      const res = await api('/api/simulation/propagate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ root_cause_node_id: nodeId, severity_factor: 1.0 })
@@ -307,7 +308,7 @@ export default function App() {
   const handleSimulateMitigation = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/simulation/mitigate', {
+      const res = await api('/api/simulation/mitigate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ failed_node_id: simulationData?.root_cause_node_id || 'stripe-primary', fallback_node_id: 'razorpay-backup' })
@@ -335,7 +336,7 @@ export default function App() {
   const handleGenerateReport = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/reports/generate', { method: 'POST' });
+      const res = await api('/api/reports/generate', { method: 'POST' });
       const data = await res.json();
       setReportData(data);
       setReportMarkdown(data.markdown || '');
@@ -347,7 +348,7 @@ export default function App() {
   const handleReset = async () => {
     setLoading(true);
     try {
-      await fetch('/api/environment/reset', { method: 'POST' });
+      await api('/api/environment/reset', { method: 'POST' });
       setMode('IDLE');
       setSimulationData(null);
       setMitigationData(null);
