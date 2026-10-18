@@ -1,4 +1,4 @@
-const BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+const BASE = ((import.meta as any).env?.VITE_API_BASE_URL || 'https://sentineltwin.onrender.com').replace(/\/$/, '');
 
 export const api = (path: string, init?: RequestInit) =>
   fetch(`${BASE}${path}`, init);
