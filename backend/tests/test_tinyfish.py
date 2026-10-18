@@ -1,6 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from backend.app.main import app
+from unittest.mock import patch
 from backend.app.services.tinyfish_client import (
     TinyFishService, SSRFSecurityException, validate_url_for_ssrf
 )
@@ -8,8 +9,10 @@ from backend.app.services.tinyfish_client import (
 client = TestClient(app)
 
 def test_ssrf_validator_valid_urls():
-    assert validate_url_for_ssrf("https://status.stripe.com") == "https://status.stripe.com"
-    assert validate_url_for_ssrf("http://example.com") == "http://example.com"
+    fake_public_ip = [(2, 1, 6, "", ("93.184.216.34", 0))]
+    with patch("backend.app.services.tinyfish_client.socket.getaddrinfo", return_value=fake_public_ip):
+        assert validate_url_for_ssrf("https://status.stripe.com") == "https://status.stripe.com"
+        assert validate_url_for_ssrf("http://example.com") == "http://example.com"
 
 def test_ssrf_validator_blocks_forbidden_schemes():
     with pytest.raises(SSRFSecurityException, match="Unsupported URL scheme"):
