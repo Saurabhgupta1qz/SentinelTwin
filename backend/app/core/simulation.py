@@ -18,6 +18,8 @@ class DigitalTwinEngine:
         self.env_id = graph_data.get("id", "env-paynest-fintech")
         self.name = graph_data.get("name", "PayNest Fintech Stack")
         self.total_baseline_users = int(graph_data.get("total_baseline_users", 10000))
+        if self.total_baseline_users <= 0:
+            raise GraphInvalidException("total_baseline_users must be greater than 0")
         self.graph = nx.DiGraph()
         self.node_lookup: Dict[str, Dict[str, Any]] = {}
         self._build_graph()
@@ -145,7 +147,7 @@ class DigitalTwinEngine:
             "transaction_failure_rate": tx_failure_rate_rounded,
             "transaction_success_rate": tx_success_rate,
             "total_affected_services": len(descendants) + 1,
-            "affected_node_ids": [failed_node_id] + list(descendants),
+            "affected_node_ids": sorted([failed_node_id] + list(descendants)),
             "affected_node_details": affected_nodes_list,
             "propagation_paths": propagation_paths,
             "provenance": "COMPUTED"
@@ -207,9 +209,12 @@ class DigitalTwinEngine:
         mitigated_tx_success = round_half_up(100.0 - mitigated_tx_failure_rounded, 1)
 
         # Delta reductions
-        user_reduction_pct = round_half_up(
-            ((baseline_sim["users_at_risk"] - mitigated_users) / baseline_sim["users_at_risk"]) * 100, 1
-        )
+        if baseline_sim["users_at_risk"] > 0:
+            user_reduction_pct = round_half_up(
+                ((baseline_sim["users_at_risk"] - mitigated_users) / baseline_sim["users_at_risk"]) * 100, 1
+            )
+        else:
+            user_reduction_pct = 0.0
 
         return {
             "baseline": baseline_sim,
@@ -222,7 +227,7 @@ class DigitalTwinEngine:
                 "transaction_failure_rate": mitigated_tx_failure_rounded,
                 "transaction_success_rate": mitigated_tx_success,
                 "total_affected_services": len(remaining_descendants) + 1,
-                "remaining_affected_node_ids": [failed_node_id] + list(remaining_descendants),
+                "remaining_affected_node_ids": sorted([failed_node_id] + list(remaining_descendants)),
                 "provenance": "COMPUTED"
             },
             "deltas": {

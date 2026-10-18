@@ -78,3 +78,38 @@ def test_round_half_up():
     assert round_half_up(19.65, 1) == 19.7
     assert round_half_up(2.00, 1) == 2.0
     assert round_half_up(88.70, 1) == 88.7
+
+
+# ---------------------------------------------------------------------------
+# Edge-case tests (G1 to G3). G1 and G2 fail until the engine is fixed:
+#   G1 -> guard the division in simulate_mitigation when baseline users at risk is 0
+#   G2 -> return sorted() node lists instead of [root] + list(set)
+# ---------------------------------------------------------------------------
+
+def _edge_graph(root_users=0, dep_users=0, with_fallback=True):
+    nodes = [
+        {"id": "root", "name": "Root", "weight": 10.0, "baseline_users": root_users,
+         "fallback_node_id": "backup" if with_fallback else None},
+        {"id": "dep", "name": "Dep", "weight": 2.0, "baseline_users": dep_users},
+        {"id": "backup", "name": "Backup", "weight": 1.0, "baseline_users": 0},
+    ]
+    edges = [{"source": "dep", "target": "root"}]
+    return {"nodes": nodes, "edges": edges, "total_baseline_users": 1000}
+
+
+def test_g1_zero_users_does_not_crash():
+    engine = DigitalTwinEngine(_edge_graph(root_users=0, dep_users=0))
+    result = engine.simulate_mitigation("root", "backup")
+    assert result["deltas"]["user_risk_reduction_percentage"] == 0.0
+
+
+def test_g2_affected_nodes_sorted():
+    engine = DigitalTwinEngine(_edge_graph(dep_users=100))
+    ids = engine.propagate_failure("root")["affected_node_ids"]
+    assert ids == sorted(ids)
+
+
+def test_g3_missing_fallback_raises():
+    engine = DigitalTwinEngine(_edge_graph(with_fallback=False))
+    with pytest.raises(ValueError):
+        engine.simulate_mitigation("root")
