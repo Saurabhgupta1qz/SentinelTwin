@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { api } from '../api';   // ya './api' agar same folder mein hai
+import { api } from './api';   // ya './api' agar same folder mein hai
 import {
   FileText,
   Download,
