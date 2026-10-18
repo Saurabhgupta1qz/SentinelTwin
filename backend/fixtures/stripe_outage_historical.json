@@ -1,0 +1,39 @@
+{
+  "incident_id": "inc-stripe-2024-10-18",
+  "provider_name": "Stripe, Inc.",
+  "mapped_node_id": "stripe-primary",
+  "match_confidence": 0.98,
+  "match_rationale": "Exact domain match on status.stripe.com and provider name Stripe, Inc.",
+  "summary": "Stripe elevated API 500 error rates on v1/charges and payment tokenization endpoints",
+  "severity": "CRITICAL",
+  "incident_status": "IDENTIFIED",
+  "is_historical_replay": true,
+  "first_observed_at": "2024-10-18T08:32:00Z",
+  "error_factor": 0.5753564,
+  "evidence_items": [
+    {
+      "id": "evi-stripe-official-01",
+      "source_title": "Stripe Status - Elevated API 500 Errors",
+      "source_url": "https://status.stripe.com/incidents/2024-10-18-api-errors",
+      "publisher": "status.stripe.com",
+      "published_at": "2024-10-18T08:45:00Z",
+      "retrieved_at": "2024-10-18T08:46:12Z",
+      "raw_snippet": "We have identified an issue with a database cluster causing elevated 500 errors on v1/charges and tokenization endpoints across North American and European regions.",
+      "signal_type": "OFFICIAL_STATUS",
+      "verification_grade": "OFFICIAL_CONFIRMED",
+      "is_real_data": true
+    },
+    {
+      "id": "evi-news-techcrunch-01",
+      "source_title": "Developers report payment failures across Stripe-powered checkouts",
+      "source_url": "https://techcrunch.com/2024/10/18/stripe-payment-outage-reports",
+      "publisher": "techcrunch.com",
+      "published_at": "2024-10-18T08:38:00Z",
+      "retrieved_at": "2024-10-18T08:40:05Z",
+      "raw_snippet": "E-commerce retailers and SaaS platforms report a sudden spike in checkout transaction failures beginning at 08:30 UTC.",
+      "signal_type": "NEWS_REPORT",
+      "verification_grade": "NEWS_CORROBORATED",
+      "is_real_data": true
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "provider": "Stripe, Inc.",
+  "search_results": [
+    {
+      "title": "Stripe Status - Elevated API 500 Errors",
+      "url": "https://status.stripe.com/incidents/2024-10-18-api-errors",
+      "snippet": "We have identified an issue with a database cluster causing elevated 500 errors on v1/charges and tokenization endpoints across North American and European regions.",
+      "published_date": "2024-10-18T08:45:00Z",
+      "rank": 1
+    },
+    {
+      "title": "Developers report payment failures across Stripe checkout",
+      "url": "https://techcrunch.com/2024/10/18/stripe-payment-outage-reports",
+      "snippet": "E-commerce retailers and SaaS platforms report a sudden spike in checkout transaction failures beginning at 08:30 UTC.",
+      "published_date": "2024-10-18T08:38:00Z",
+      "rank": 2
+    }
+  ],
+  "fetch_result": {
+    "url": "https://status.stripe.com",
+    "title": "Stripe System Status",
+    "status_code": 200,
+    "text": "# Stripe System Status\n\n**Current Status:** Degraded Performance\n\n### Active Incidents\n- **Elevated API Errors (Identified):** We have identified an issue with a database cluster causing elevated 500 errors on `v1/charges`.\n\n### Component Status\n- Stripe API: Degraded\n- Webhooks: Operational\n- Dashboard: Operational"
+  }
+}

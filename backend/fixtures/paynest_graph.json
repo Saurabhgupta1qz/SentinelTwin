@@ -1,0 +1,149 @@
+{
+  "id": "env-paynest-fintech",
+  "name": "PayNest Fintech Stack",
+  "description": "Production reference stack with primary Stripe and standby Razorpay gateways for AZINHACK '26",
+  "total_baseline_users": 10000,
+  "nodes": [
+    {
+      "id": "stripe-primary",
+      "name": "Stripe Primary Gateway",
+      "category": "PAYMENT_GATEWAY",
+      "criticality": "MISSION_CRITICAL",
+      "weight": 10.0,
+      "provider_name": "Stripe, Inc.",
+      "status_url": "https://status.stripe.com",
+      "fallback_node_id": "razorpay-backup",
+      "baseline_users": 0,
+      "status": "HEALTHY",
+      "position": { "x": 100, "y": 250 }
+    },
+    {
+      "id": "razorpay-backup",
+      "name": "Razorpay Backup Gateway",
+      "category": "PAYMENT_GATEWAY",
+      "criticality": "HIGH",
+      "weight": 8.0,
+      "provider_name": "Razorpay",
+      "status_url": "https://status.razorpay.com",
+      "fallback_node_id": null,
+      "baseline_users": 0,
+      "status": "HEALTHY",
+      "position": { "x": 100, "y": 450 }
+    },
+    {
+      "id": "payment-router",
+      "name": "Payment Routing Service",
+      "category": "API_BACKEND",
+      "criticality": "HIGH",
+      "weight": 6.0,
+      "provider_name": "PayNest Internal",
+      "status_url": null,
+      "fallback_node_id": null,
+      "baseline_users": 0,
+      "status": "HEALTHY",
+      "position": { "x": 350, "y": 250 }
+    },
+    {
+      "id": "checkout-api",
+      "name": "Checkout API Service",
+      "category": "API_BACKEND",
+      "criticality": "MISSION_CRITICAL",
+      "weight": 5.5,
+      "provider_name": "PayNest Internal",
+      "status_url": null,
+      "fallback_node_id": null,
+      "baseline_users": 1200,
+      "status": "HEALTHY",
+      "position": { "x": 580, "y": 200 }
+    },
+    {
+      "id": "order-service",
+      "name": "Order Processing Engine",
+      "category": "API_BACKEND",
+      "criticality": "HIGH",
+      "weight": 2.4,
+      "provider_name": "PayNest Internal",
+      "status_url": null,
+      "fallback_node_id": null,
+      "baseline_users": 564,
+      "status": "HEALTHY",
+      "position": { "x": 800, "y": 200 }
+    },
+    {
+      "id": "sub-billing",
+      "name": "Subscription Billing Worker",
+      "category": "API_BACKEND",
+      "criticality": "MEDIUM",
+      "weight": 0.20,
+      "provider_name": "PayNest Internal",
+      "status_url": null,
+      "fallback_node_id": null,
+      "baseline_users": 200,
+      "status": "HEALTHY",
+      "position": { "x": 350, "y": 400 }
+    },
+    {
+      "id": "auth-service",
+      "name": "Customer Authentication",
+      "category": "AUTH_PROVIDER",
+      "criticality": "HIGH",
+      "weight": 4.0,
+      "provider_name": "PayNest Internal",
+      "status_url": null,
+      "fallback_node_id": null,
+      "baseline_users": 3000,
+      "status": "HEALTHY",
+      "position": { "x": 580, "y": 420 }
+    },
+    {
+      "id": "portal-web",
+      "name": "PayNest Web Portal",
+      "category": "FRONTEND_CLIENT",
+      "criticality": "MEDIUM",
+      "weight": 3.0,
+      "provider_name": "PayNest Internal",
+      "status_url": null,
+      "fallback_node_id": null,
+      "baseline_users": 5036,
+      "status": "HEALTHY",
+      "position": { "x": 800, "y": 420 }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-router-stripe",
+      "source": "payment-router",
+      "target": "stripe-primary",
+      "is_hard_dependency": true,
+      "label": "forwards card charges"
+    },
+    {
+      "id": "edge-checkout-router",
+      "source": "checkout-api",
+      "target": "payment-router",
+      "is_hard_dependency": true,
+      "label": "submits order payments"
+    },
+    {
+      "id": "edge-order-checkout",
+      "source": "order-service",
+      "target": "checkout-api",
+      "is_hard_dependency": true,
+      "label": "finalizes cart checkouts"
+    },
+    {
+      "id": "edge-billing-stripe",
+      "source": "sub-billing",
+      "target": "stripe-primary",
+      "is_hard_dependency": true,
+      "label": "processes recurring webhooks"
+    },
+    {
+      "id": "edge-portal-auth",
+      "source": "portal-web",
+      "target": "auth-service",
+      "is_hard_dependency": true,
+      "label": "validates session JWTs"
+    }
+  ]
+}
