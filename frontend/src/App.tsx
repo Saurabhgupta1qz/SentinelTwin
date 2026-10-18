@@ -342,49 +342,141 @@ export default function App() {
 
       {/* ── Mode Banner ─────────────────────────────────────── */}
       {mc && (
-        <div className={`w-full py-2 px-6 flex items-center justify-between text-xs font-medium animate-fade-in ${mc.bg}`}>
+        <div
+          className="w-full py-2 px-6 flex items-center justify-between text-xs font-semibold animate-fade-in"
+          style={{
+            background: mode === 'LIVE'
+              ? 'linear-gradient(90deg, rgba(59,91,219,0.08) 0%, rgba(76,110,245,0.05) 100%)'
+              : 'linear-gradient(90deg, rgba(105,70,198,0.08) 0%, rgba(105,70,198,0.04) 100%)',
+            borderBottom: mode === 'LIVE' ? '1px solid rgba(59,91,219,0.15)' : '1px solid rgba(105,70,198,0.15)'
+          }}
+        >
           <div className="flex items-center gap-2">
+            {/* Animated pulse dot */}
+            <span
+              className="w-2 h-2 rounded-full flex-shrink-0 status-dot-live"
+              style={{ background: mode === 'LIVE' ? '#3B5BDB' : '#6946C6' }}
+            />
             <mc.icon className={`w-3.5 h-3.5 ${mode === 'LIVE' ? 'text-acc' : 'text-rep'}`} />
             <span className={mode === 'LIVE' ? 'text-acc' : 'text-rep'}>{mc.text}</span>
           </div>
-          <span className={`badge ${mc.badgeStyle}`}>{mc.badge}</span>
+          <span
+            className="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full tracking-wide"
+            style={{
+              background: mode === 'LIVE' ? 'rgba(59,91,219,0.12)' : 'rgba(105,70,198,0.12)',
+              color: mode === 'LIVE' ? '#3B5BDB' : '#6946C6',
+              border: mode === 'LIVE' ? '1px solid rgba(59,91,219,0.2)' : '1px solid rgba(105,70,198,0.2)'
+            }}
+          >
+            {mc.badge}
+          </span>
         </div>
       )}
 
       {/* ── Top Navigation Bar ──────────────────────────────── */}
-      <header className="h-[60px] border-b border-line bg-white px-5 flex items-center justify-between z-20 flex-shrink-0" style={{ boxShadow: '0 1px 0 var(--line)' }}>
+      <header
+        className="h-[64px] border-b border-line/60 px-5 flex items-center justify-between z-20 flex-shrink-0"
+        style={{
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,250,255,0.97) 100%)',
+          backdropFilter: 'blur(12px)',
+          boxShadow: '0 1px 0 rgba(226,232,240,0.8), 0 4px 24px rgba(18,32,56,0.04)'
+        }}
+      >
         {/* Brand */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-[9px] flex items-center justify-center bg-gradient-to-br from-acc to-[#4C6EF5]" style={{ boxShadow: '0 2px 8px rgba(45,82,227,0.35)' }}>
-            <Cpu className="w-4 h-4 text-white" />
+          <div
+            className="w-9 h-9 rounded-[11px] flex items-center justify-center relative overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, #3B5BDB 0%, #4C6EF5 50%, #748FFC 100%)',
+              boxShadow: '0 2px 12px rgba(59,91,219,0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
+            }}
+          >
+            <Cpu className="w-4.5 h-4.5 text-white relative z-10" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
           </div>
           <div>
-            <div className="font-bold text-[14px] tracking-tight text-ink flex items-center gap-2">
+            <div className="font-bold text-[14.5px] tracking-tight text-ink flex items-center gap-2">
               SentinelTwin
-              <span className="badge badge-muted text-[10.5px]">Azinhack '26</span>
+              <span
+                className="text-[10px] font-semibold px-2 py-0.5 rounded-full tracking-wide"
+                style={{ background: 'linear-gradient(90deg, #eef2ff, #e0e7ff)', color: '#3B5BDB', border: '1px solid rgba(59,91,219,0.15)' }}
+              >
+                AZINHACK '26
+              </span>
             </div>
             <div className="text-[11px] text-ink3 flex items-center gap-1.5 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-ok status-dot-live relative inline-block" />
               <span>PayNest fintech stack</span>
-              <span className="text-line2 mx-0.5">·</span>
+              <span className="opacity-30 mx-0.5">·</span>
               <span>Zero production mutation safe</span>
             </div>
           </div>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-2">
-          <button id="btn-live-scan" onClick={handleLiveInvestigation} disabled={loading} className="btn btn-primary">
-            {loading && mode === 'LIVE' ? <Spinner /> : <Search className="w-3.5 h-3.5" />}
-            <span>Live scan (TinyFish)</span>
+        {/* Premium Action Controls */}
+        <div className="flex items-center gap-2.5">
+
+          {/* Live Scan — Electric Blue Glow Button */}
+          <button
+            id="btn-live-scan"
+            onClick={handleLiveInvestigation}
+            disabled={loading}
+            className="group relative flex items-center gap-2 px-4 py-2 rounded-[10px] text-[12.5px] font-semibold text-white overflow-hidden transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              background: 'linear-gradient(135deg, #3B5BDB 0%, #4C6EF5 60%, #5C7CFA 100%)',
+              boxShadow: '0 2px 8px rgba(59,91,219,0.35), 0 1px 0 rgba(255,255,255,0.15) inset, 0 -1px 0 rgba(0,0,0,0.12) inset'
+            }}
+          >
+            {/* Shimmer layer */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+            {loading && mode === 'LIVE'
+              ? <Spinner />
+              : <Search className="w-3.5 h-3.5 relative z-10 group-hover:scale-110 transition-transform duration-150" />
+            }
+            <span className="relative z-10">Live scan</span>
+            <span
+              className="relative z-10 text-[10px] font-bold px-1.5 py-0.5 rounded-md tracking-wide"
+              style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.2)' }}
+            >
+              TinyFish
+            </span>
           </button>
-          <button id="btn-historical-replay" onClick={handleHistoricalReplay} disabled={loading} className="btn btn-rep">
-            {loading && mode === 'REPLAY' ? <Spinner /> : <History className="w-3.5 h-3.5" />}
-            <span>Historical replay</span>
+
+          {/* Historical Replay — Violet Glass Button */}
+          <button
+            id="btn-historical-replay"
+            onClick={handleHistoricalReplay}
+            disabled={loading}
+            className="group relative flex items-center gap-2 px-4 py-2 rounded-[10px] text-[12.5px] font-semibold overflow-hidden transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              background: 'linear-gradient(135deg, rgba(105,70,198,0.1) 0%, rgba(105,70,198,0.05) 100%)',
+              color: '#6946C6',
+              border: '1px solid rgba(105,70,198,0.25)',
+              boxShadow: '0 2px 8px rgba(105,70,198,0.1), inset 0 1px 0 rgba(255,255,255,0.8)'
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+            {loading && mode === 'REPLAY'
+              ? <Spinner />
+              : <History className="w-3.5 h-3.5 relative z-10 group-hover:rotate-[-30deg] transition-transform duration-200" />
+            }
+            <span className="relative z-10">Historical replay</span>
           </button>
-          <div className="w-px h-5 bg-line mx-0.5" />
-          <button id="btn-reset" onClick={handleReset} disabled={loading} className="btn btn-ghost">
-            <RotateCcw className="w-3.5 h-3.5" />
+
+          {/* Divider */}
+          <div className="w-px h-6 mx-0.5" style={{ background: 'linear-gradient(180deg, transparent, var(--line), transparent)' }} />
+
+          {/* Reset — Ghost minimal */}
+          <button
+            id="btn-reset"
+            onClick={handleReset}
+            disabled={loading}
+            className="group flex items-center gap-1.5 px-3 py-2 rounded-[10px] text-[12px] font-medium text-ink3 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed hover:text-ink hover:bg-wash"
+            style={{ border: '1px solid transparent' }}
+            onMouseEnter={e => (e.currentTarget.style.border = '1px solid var(--line)')}
+            onMouseLeave={e => (e.currentTarget.style.border = '1px solid transparent')}
+          >
+            <RotateCcw className="w-3.5 h-3.5 group-hover:rotate-[-180deg] transition-transform duration-300" />
             <span>Reset</span>
           </button>
         </div>
@@ -432,32 +524,63 @@ export default function App() {
               />
             </ReactFlow>
 
-            {/* What-If Overlay */}
-            <div className="absolute bottom-4 left-4 z-10 bg-white border border-line rounded-[11px] p-3 shadow-md flex items-center gap-3 animate-slide-up">
-              <div className="flex items-center gap-1.5 text-[12px] font-semibold text-ink whitespace-nowrap">
-                <ShieldAlert className="w-3.5 h-3.5 text-warn" />
-                What-if:
+            {/* What-If Overlay — Premium Command-Palette Style */}
+            <div
+              className="absolute bottom-4 left-4 z-10 flex items-center gap-2.5 animate-slide-up"
+              style={{
+                background: 'linear-gradient(135deg, rgba(17,24,39,0.92) 0%, rgba(30,41,59,0.90) 100%)',
+                backdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '14px',
+                padding: '10px 14px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.08)'
+              }}
+            >
+              {/* Label */}
+              <div className="flex items-center gap-1.5 text-[11.5px] font-semibold whitespace-nowrap" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                <ShieldAlert className="w-3.5 h-3.5" style={{ color: '#FB923C' }} />
+                <span>What-if</span>
               </div>
+
+              {/* Divider */}
+              <div className="w-px h-4" style={{ background: 'rgba(255,255,255,0.12)' }} />
+
+              {/* Select */}
               <select
                 id="what-if-node-select"
                 value={selectedNodeId}
                 onChange={(e) => setSelectedNodeId(e.target.value)}
-                className="text-[12px] bg-wash border border-line text-ink rounded-lg px-2.5 py-1.5 outline-none cursor-pointer focus:border-acc focus:ring-2 focus:ring-accbg transition-all"
+                className="text-[12px] font-medium outline-none cursor-pointer transition-all"
+                style={{
+                  background: 'rgba(255,255,255,0.08)',
+                  color: 'rgba(255,255,255,0.88)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  borderRadius: '8px',
+                  padding: '5px 10px',
+                  appearance: 'auto'
+                }}
               >
-                <option value="stripe-primary">Stripe primary gateway</option>
-                <option value="payment-router">Payment routing service</option>
-                <option value="checkout-api">Checkout API service</option>
-                <option value="order-service">Order processing engine</option>
-                <option value="auth-service">Customer authentication</option>
+                <option value="stripe-primary" style={{ background: '#1e293b' }}>Stripe primary gateway</option>
+                <option value="payment-router" style={{ background: '#1e293b' }}>Payment routing service</option>
+                <option value="checkout-api" style={{ background: '#1e293b' }}>Checkout API service</option>
+                <option value="order-service" style={{ background: '#1e293b' }}>Order processing engine</option>
+                <option value="auth-service" style={{ background: '#1e293b' }}>Customer authentication</option>
               </select>
+
+              {/* Simulate Outage button — Red Glow */}
               <button
                 id="btn-simulate-outage"
                 onClick={() => handleSimulateNodeFailure(selectedNodeId)}
                 disabled={loading}
-                className="btn btn-danger-soft"
+                className="group relative flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] text-[12px] font-semibold text-white overflow-hidden transition-all duration-150 disabled:opacity-40"
+                style={{
+                  background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
+                  boxShadow: '0 2px 12px rgba(220,38,38,0.45), inset 0 1px 0 rgba(255,255,255,0.15)'
+                }}
               >
-                {loading ? <Spinner /> : <Zap className="w-3.5 h-3.5" />}
-                Simulate outage
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+                {loading ? <Spinner /> : <Zap className="w-3.5 h-3.5 relative z-10 group-hover:scale-125 transition-transform duration-150" />}
+                <span className="relative z-10">Simulate outage</span>
               </button>
             </div>
           </div>
