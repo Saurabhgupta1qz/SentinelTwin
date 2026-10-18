@@ -2,24 +2,40 @@
   "provider": "Stripe, Inc.",
   "search_results": [
     {
+      "position": 1,
+      "site_name": "status.stripe.com",
       "title": "Stripe Status - Elevated API 500 Errors",
       "url": "https://status.stripe.com/incidents/2024-10-18-api-errors",
       "snippet": "We have identified an issue with a database cluster causing elevated 500 errors on v1/charges and tokenization endpoints across North American and European regions.",
-      "published_date": "2024-10-18T08:45:00Z",
-      "rank": 1
+      "date": "2024-10-18T08:45:00Z"
     },
     {
+      "position": 2,
+      "site_name": "techcrunch.com",
       "title": "Developers report payment failures across Stripe checkout",
       "url": "https://techcrunch.com/2024/10/18/stripe-payment-outage-reports",
       "snippet": "E-commerce retailers and SaaS platforms report a sudden spike in checkout transaction failures beginning at 08:30 UTC.",
-      "published_date": "2024-10-18T08:38:00Z",
-      "rank": 2
+      "date": "2024-10-18T08:38:00Z"
+    },
+    {
+      "position": 3,
+      "site_name": "downdetector.com",
+      "title": "Stripe - Current problems and outages | Downdetector",
+      "url": "https://downdetector.com/status/stripe/",
+      "snippet": "User reports indicate Stripe is having problems since 8:30 AM EDT. Payment processing errors reported across multiple regions.",
+      "date": "2024-10-18T08:50:00Z"
     }
   ],
   "fetch_result": {
     "url": "https://status.stripe.com",
+    "final_url": "https://status.stripe.com",
     "title": "Stripe System Status",
-    "status_code": 200,
-    "text": "# Stripe System Status\n\n**Current Status:** Degraded Performance\n\n### Active Incidents\n- **Elevated API Errors (Identified):** We have identified an issue with a database cluster causing elevated 500 errors on `v1/charges`.\n\n### Component Status\n- Stripe API: Degraded\n- Webhooks: Operational\n- Dashboard: Operational"
+    "description": "Current status and incident history for Stripe API and services.",
+    "language": "en",
+    "author": null,
+    "published_date": null,
+    "text": "# Stripe System Status\n\n**Current Status:** Degraded Performance\n\n### Active Incidents\n- **Elevated API Errors (Identified):** We have identified an issue with a database cluster causing elevated 500 errors on `v1/charges`.\n\n### Component Status\n- Stripe API: Degraded\n- Webhooks: Operational\n- Dashboard: Operational",
+    "format": "markdown",
+    "latency_ms": 1240
   }
 }

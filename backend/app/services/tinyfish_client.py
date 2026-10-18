@@ -173,7 +173,11 @@ class TinyFishService:
             "X-API-Key": self.api_key,
             "Content-Type": "application/json"
         }
-        payload = {"urls": [target_url]}
+        payload = {
+            "urls": [target_url],
+            "format": "markdown",
+            "ttl": 0,           # Always fetch live (no cached copy)
+        }
 
         for attempt in range(self.max_retries + 1):
             try:

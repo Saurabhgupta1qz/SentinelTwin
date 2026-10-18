@@ -7,7 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2026-10-18 (TinyFish Full Backend Integration)
+
+### Added
+- **`POST /api/investigation/start`** — async investigation endpoint, returns `run_id` + `stream_url` (HTTP 202)
+- **`GET /api/investigation/stream/{run_id}`** — SSE endpoint emitting `log`, `evidence`, `incident_mapped`, `complete` events per API_SPEC §3.4
+- **`backend/app/core/evidence_mapper.py`** — normalises TinyFish Search results (`position`, `site_name`, `date`) and Fetch results into `EvidenceItem` dicts; correctly handles live API field names which differ from spec placeholders (`date` not `published_date`, no `rank` field)
+- **`backend/app/core/investigation_runner.py`** — orchestrates the full async pipeline: TinySearch → TinyFetch → evidence mapping → node matching → graph mutation → SSE event buffer
+- **`backend/.env.example`** — documents required env vars (`TINYFISH_API_KEY`, optional endpoint overrides)
+- **`backend/scripts/tinyfish_spike.py`** — offline verification script for Search + Fetch API contracts
+
+### Changed
+- **`/health` response** — now includes `external_integrations.tinyfish.configured` and `mode` (`LIVE_API` / `FIXTURE_FALLBACK`)
+- **`backend/fixtures/tinyfish_stripe_outage.json`** — updated search results to use live API field names (`position`, `site_name`, `date`); fetch result now includes `final_url`, `language`, `description`, `format`, `latency_ms` fields
+- **`tinyfish_client.py`** — Fetch payload now explicitly sets `format: markdown` and `ttl: 0` per verified Fetch API reference
+- **`schemas/models.py`** — added `InvestigationStartRequest` Pydantic model
+
+### Deviations from INTEGRATION_SPEC (INT-001)
+- Live TinyFish Search response uses field `date` (not `published_date`) and `site_name` (not `domain`) — evidence_mapper handles both for backwards compat
+- No `rank` field in live API; `position` (1-indexed) is used instead
+- `recency_minutes`, `after_date`, `domain_type=news` params now confirmed real (were marked [U] in spec) — available for future use
+- All 16 pytest tests continue to pass (golden values unchanged)
+
+---
+
 ## [1.1.0] - 2026-10-18 (AZINHACK '26 6-Hour Implementation Delivery)
+
 
 ### Decisions on Open Conflicts & Invariants
 - **Graph Validity:** Reject dangling edges and self-loops on write. Block cycles at validate/simulate returning HTTP `409 Conflict` with error code `GRAPH_INVALID`.

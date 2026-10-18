@@ -41,3 +41,8 @@ class MitigateRequest(BaseModel):
 class ReportRequest(BaseModel):
     incident_id: Optional[str] = None
     mode: Optional[str] = "template"
+
+
+class InvestigationStartRequest(BaseModel):
+    mode: Optional[str] = "LIVE_WEB"
+    target_providers: Optional[List[str]] = None
