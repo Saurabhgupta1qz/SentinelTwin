@@ -1,119 +1,116 @@
-# SentinelTwin — Acceptance Criteria (AC)
+# SentinelTwin — Acceptance Criteria (ACCEPTANCE_CRITERIA)
 
-**Document ID:** AC-001  
-**Project:** SentinelTwin  
-**Standard:** Gherkin (Given-When-Then) & Measurable Technical Thresholds  
-**Version:** 1.0.0  
+**Project:** SentinelTwin (AZINHACK '26)
+**Version:** 1.1.0 (aligned to the running backend)
+**Reference stack:** PayNest fintech (8 nodes, 5 edges)
 
----
+Each criterion has a **Status**:
 
-## 1. Overview & Evaluation Philosophy
+- **Verified (test):** covered by an automated test that passes.
+- **Verified (output):** confirmed from real API output, no automated test known.
+- **Unverified:** not yet checked. Check it before the demo.
+- **Not implemented / unknown:** no evidence it exists in the code.
 
-Every requirement in SentinelTwin must meet explicit, automated, and human-verifiable acceptance criteria before being certified ready for production demo at Kritical Hacks 2026. Acceptance criteria are grouped by Functional Requirement (FR) and Non-Functional Requirement (NFR).
-
----
-
-## 2. Measurable Acceptance Criteria by Feature
-
-### AC-FR-01: Infrastructure Graph Definition
-- **AC-01.1 (Graph Initialization):**
-  - **Given** a user opens the application for the first time,
-  - **When** the dashboard loads,
-  - **Then** the pre-configured `PayPulse Fintech Stack` environment shall load automatically with exactly 12 nodes and 16 directed edges.
-- **AC-01.2 (Node Schema Validation):**
-  - **Given** any node in the environment,
-  - **When** its JSON definition is validated against the Pydantic `ServiceNode` schema,
-  - **Then** `id`, `name`, `category`, `criticality`, and `simulated_users_baseline` must be non-null and strictly typed.
-
-### AC-FR-02: Interactive React Flow Canvas
-- **AC-02.1 (Visual Rendering & Responsiveness):**
-  - **Given** the 12-node DAG canvas,
-  - **When** a user zooms or pans using mouse/trackpad,
-  - **Then** rendering shall maintain a minimum of 50 FPS with zero layout jitter.
-- **AC-02.2 (Node State Color Coding):**
-  - **Given** an updated node status from the backend,
-  - **When** the node state is `HEALTHY`, border must render `#10B981` (Emerald).
-  - **When** the node state is `DEGRADED`, border must render `#F59E0B` (Amber).
-  - **When** the node state is `FAILED`, border must render `#EF4444` (Red).
-  - **When** the node state is `UNKNOWN`, border must render `#64748B` (Slate Grey).
-
-### AC-FR-03 & AC-FR-04: TinyFish Live Intelligence & Early Warning
-- **AC-03.1 (Live Web Signal Retrieval):**
-  - **Given** a valid `TINYFISH_API_KEY` set in the environment,
-  - **When** the user clicks "Start Live Investigation",
-  - **Then** the backend must make a verified HTTP `GET` request to `https://api.search.tinyfish.ai` with header `X-API-Key`, returning $\ge 1$ structured result containing `title`, `url`, and `snippet`.
-- **AC-03.2 (Status Page Fetch):**
-  - **Given** an incident signal URL discovered by TinySearch,
-  - **When** `TinyFetch` is invoked via `POST https://api.fetch.tinyfish.ai`,
-  - **Then** the response must return structured clean Markdown without HTML tags, script elements, or advertising blocks.
-- **AC-03.3 (Zero API Key Graceful Fallback):**
-  - **Given** `TINYFISH_API_KEY` is empty, expired, or returns HTTP 429,
-  - **When** an investigation is triggered,
-  - **Then** the backend must complete the investigation in $< 1\text{ second}$ using verified local fixture `fixtures/tinyfish_stripe_outage.json`, streaming informative logs to the UI and setting the badge to `FIXTURE REPLAY` without error popups.
-
-### AC-FR-05 & AC-FR-06: Evidence Verification & Node Mapping
-- **AC-05.1 (Deterministic Verification Tagging):**
-  - **Given** ingested evidence from an official status domain (`status.stripe.com`),
-  - **When** the evidence normalizer evaluates the signal,
-  - **Then** `verification_grade` must equal `OFFICIAL_CONFIRMED`.
-  - **Given** an unverified news article or social post,
-  - **Then** `verification_grade` must equal `UNVERIFIED_EARLY_WARNING`.
-- **AC-06.1 (Automated Graph Node Linking):**
-  - **Given** an incident referencing provider `Stripe`,
-  - **When** the mapper evaluates graph nodes,
-  - **Then** it must link specifically to `srv-stripe-primary` with a match confidence score $\ge 0.85$ and record the match rationale (`"Matched provider alias 'Stripe' and status_url 'status.stripe.com'"`).
-
-### AC-FR-07 & AC-FR-08: NetworkX Digital Twin & What-If Simulation
-- **AC-07.1 (Topological Traversal Accuracy):**
-  - **Given** failure injected into `srv-stripe-primary`,
-  - **When** `DigitalTwinEngine.propagate()` executes,
-  - **Then** the returned `affected_nodes` list must contain exactly `srv-checkout-svc`, `srv-order-processing`, `srv-subscription-worker`, and `srv-customer-portal`, and must **not** contain independent nodes such as `srv-internal-db` or `srv-auth0-idp`.
-- **AC-07.2 (Simulation Execution Speed):**
-  - **Given** a 12-node, 16-edge graph,
-  - **When** failure propagation executes,
-  - **Then** computation time in NetworkX must be $< 15\text{ milliseconds}$.
-
-### AC-FR-09 & AC-FR-10: Recovery Mitigation & Ranked Action Plan
-- **AC-09.1 (Mitigation Delta Recalculation):**
-  - **Given** an active simulated failure on `srv-stripe-primary`,
-  - **When** the user applies the mitigation lever `FAILOVER_BACKUP` targeting `srv-razorpay-backup`,
-  - **Then** the backend must return a side-by-side metric comparison proving:
-    1. Impacted node count decreases by $\ge 70\%$ (e.g. $5 \rightarrow 1$).
-    2. Estimated users at risk decreases by $\ge 85\%$ (e.g. $18,400 \rightarrow 1,200$).
-- **AC-10.1 (Ranked Action Plan Integrity):**
-  - **Given** generated recovery actions,
-  - **When** inspected in the UI,
-  - **Then** the highest-ranked action must be `Switch Primary Checkout Traffic to Backup Gateway (Razorpay)` with explicit tag `HUMAN APPROVAL REQUIRED: TRUE`.
-
-### AC-FR-11: Evidence-Grounded AI Incident Brief
-- **AC-11.1 (Source Citation Rigor):**
-  - **Given** the generated Claude AI brief,
-  - **When** the markdown text is parsed,
-  - **Then** every external factual assertion must be accompanied by an exact, clickable markdown hyperlink `[Source](url)` matching an ingested evidence item.
-- **AC-11.2 (Zero LLM Hallucination of Metrics):**
-  - **Given** the generated brief,
-  - **When** metrics are stated (e.g., "18,400 users at risk"),
-  - **Then** the numbers must strictly match the deterministic simulation outputs from NetworkX.
-- **AC-11.3 (Offline Template Fallback):**
-  - **Given** `ANTHROPIC_API_KEY` is not present,
-  - **When** the user clicks "Generate Brief",
-  - **Then** a clean, complete report must render within $< 200\text{ ms}$ using the deterministic Jinja2/string template engine.
-
-### AC-FR-12: Historical Incident Replay
-- **AC-12.1 (Prominent Watermarking):**
-  - **Given** the system is in Replay mode,
-  - **When** any screen or brief is viewed,
-  - **Then** the banner `⚠️ HISTORICAL INCIDENT REPLAY — NOT A LIVE OUTAGE` must be visibly rendered in bold amber across the viewport.
+Reference values come from `SIMULATION_MODEL.md`. They are computed from simulated inputs.
 
 ---
 
-## 3. Non-Functional Acceptance Criteria
+## 1. Graph and environment
 
-| Criteria ID | Category | Target Metric | Verification Method |
+| ID | Criterion | Status |
+| :--- | :--- | :--- |
+| AC-01 | `GET /api/environment` returns the PayNest stack with exactly 8 nodes and 5 edges. | Verified (output) |
+| AC-02 | Node IDs are `stripe-primary`, `razorpay-backup`, `payment-router`, `checkout-api`, `order-service`, `sub-billing`, `auth-service`, `portal-web`. | Verified (output) |
+| AC-03 | The engine rejects edges to unknown nodes, self-loops and cycles. | Verified (test): `test_reject_dangling_edge`, `test_reject_self_loop`, `test_reject_cycles_graph_invalid` |
+| AC-04 | `POST /api/environment/edges` rejects an invalid edge with an error response. | Verified (test): `test_environment_and_edge_rejection` |
+| AC-05 | An oversized request body returns HTTP 413. | Verified (test): `test_payload_too_large_413` |
+| AC-06 | `POST /api/environment/reset` restores the seed graph. | Unverified |
+| AC-07 | The canvas shows all 8 nodes, with colors for healthy, degraded, failed and unknown matching the tokens in `UI_UX.md`. | Unverified (manual) |
+
+## 2. Propagation and metrics
+
+Failed node `stripe-primary`, severity 1.0.
+
+| ID | Criterion | Status |
+| :--- | :--- | :--- |
+| AC-10 | Affected nodes are exactly `stripe-primary`, `payment-router`, `checkout-api`, `order-service`, `sub-billing` (5 services). | Verified (test): `test_golden_values_reproduction` |
+| AC-11 | `auth-service`, `portal-web` and `razorpay-backup` are not affected. | Verified (output) |
+| AC-12 | Weighted impact score is 23.2. | Verified (test) |
+| AC-13 | Users at risk is 1,964 (19.6% of 10,000 simulated users). | Verified (test) |
+| AC-14 | Transaction failure rate is 11.3% and success rate is 88.7%. | Verified (test) |
+| AC-15 | Rounding is half-up. | Verified (test): `test_round_half_up` |
+| AC-16 | The affected node list has a stable order across runs. | **Fails today**: uses set order. Fix with `sorted()`. |
+| AC-17 | A scenario with zero users at risk returns a response, not an error. | **Fails today**: division by zero. Fix and add a test. |
+
+## 3. Recovery simulation
+
+Failed node `stripe-primary`, fallback `razorpay-backup`.
+
+| ID | Criterion | Status |
+| :--- | :--- | :--- |
+| AC-20 | Mitigated affected services are `stripe-primary` and `sub-billing` (2 services, 3 restored). | Verified (test) |
+| AC-21 | Mitigated weighted impact score is 10.2 and users at risk is 200 (2.0%). | Verified (test): `test_simulation_endpoints_golden_values` |
+| AC-22 | Mitigated failure rate is 1.2% and success rate is 98.8% (+10.1 percentage points). | Verified (test) |
+| AC-23 | User risk reduction is 89.8% and users restored is 1,764. | Verified (test) |
+| AC-24 | The UI states that `sub-billing` is assumed not to fail over (a simulated assumption). | Unverified (manual) |
+| AC-25 | The ranked plan lists P0 (enable failover) before P1 (pause billing retries). Both require human approval. | Verified (output) |
+| AC-26 | Runbook commands are labeled illustrative and are never executed by the app. | Unverified (check UI label) |
+
+## 4. TinyFish intelligence
+
+| ID | Criterion | Status |
+| :--- | :--- | :--- |
+| AC-30 | Without `TINYFISH_API_KEY`, an investigation completes using fixture data, shows a fixture badge, and raises no error. | Verified (test): `test_tinyfish_service_offline_fixture_fallback` |
+| AC-31 | The live investigation endpoint returns evidence items. | Verified (test): `test_live_investigation_endpoint` (confirm whether it mocks the network) |
+| AC-32 | With a real key, one live Search and one live Fetch return results, and the UI shows a live badge. | Unverified (manual, run once before the demo) |
+| AC-33 | Response fields used by the code (`title`, `url`, `snippet`, `position`, `site_name`) match the current TinyFish documentation. | Unverified |
+| AC-34 | An empty or failed TinyFish result is never treated as success. | Unverified |
+| AC-35 | Each evidence item shows source URL, publisher, publish time (if available), retrieval time and verification grade. | Unverified (manual) |
+
+## 5. Security
+
+| ID | Criterion | Status |
+| :--- | :--- | :--- |
+| AC-40 | Valid public URLs pass the SSRF check. | Verified (test): `test_ssrf_validator_valid_urls` (DNS is mocked) |
+| AC-41 | Non-http(s) schemes are blocked. | Verified (test) |
+| AC-42 | Localhost and metadata addresses are blocked. | Verified (test): `test_ssrf_validator_blocks_localhost_and_metadata` |
+| AC-43 | Redirects are re-validated, and IPv6-mapped private addresses are blocked. | Not implemented / unknown |
+| AC-44 | The built frontend contains no API keys. | Unverified. Run `npm run build`, then `findstr /S /I "TINYFISH ANTHROPIC" frontend\dist\*`. |
+| AC-45 | Web text is escaped before it enters a Claude prompt. | Not implemented / unknown (no test found) |
+| AC-46 | The app contains no credentials for production systems and never executes remediation. | Unverified (code review) |
+
+## 6. Report and replay
+
+| ID | Criterion | Status |
+| :--- | :--- | :--- |
+| AC-50 | `POST /api/reports/generate` returns a report. | Verified (test): `test_generate_report` |
+| AC-51 | Every number in the report equals the simulation output. | Unverified |
+| AC-52 | Every source link in the report matches an evidence item. | Unverified |
+| AC-53 | Without `ANTHROPIC_API_KEY`, a template report is returned and labeled as a template. | Unverified |
+| AC-54 | `POST /api/investigation/replay` returns evidence labeled as replay or fixture. | Verified (test): `test_replay_and_evidence` |
+| AC-55 | In replay mode, a banner "Historical incident replay — not a live outage" is visible on every screen. | Unverified (manual) |
+| AC-56 | The replay incident has a verified official source URL and dates in `DEMO_PLAN.md`, or is labeled a fictional fixture. | Not done (see `DEMO_PLAN.md` section 3) |
+
+## 7. Health
+
+| ID | Criterion | Status |
+| :--- | :--- | :--- |
+| AC-60 | `GET /health` and `GET /api/v1/health` return a healthy response. | Verified (test): `test_health_endpoints` |
+
+## 8. Non-functional
+
+| ID | Criterion | Target | Status |
 | :--- | :--- | :--- | :--- |
-| **AC-NFR-01** | Performance | Backend graph simulation $< 50\text{ ms}$ | Automated pytest benchmark |
-| **AC-NFR-02** | Security | Zero live production mutation capability | Architectural audit & env inspection |
-| **AC-NFR-03** | Security | 100% SSRF mitigation on web fetches | Pytest with `127.0.0.1` and `169.254.169.254` payloads |
-| **AC-NFR-04** | Security | Zero frontend exposure of API keys | Automated grep check of Vite build bundle |
-| **AC-NFR-05** | Reliability | 100% demo pass rate in offline mode | E2E Playwright test with network disabled |
-| **AC-NFR-06** | Usability | Dark mode contrast ratio $\ge 4.5:1$ (AA) | Lighthouse accessibility audit |
+| AC-NFR-01 | Local simulation time | Under 50 ms for this 8-node graph | Unverified (add a timing test) |
+| AC-NFR-02 | Demo works offline in replay mode | Full flow, no errors | Unverified (rehearse with the network off) |
+| AC-NFR-03 | Text contrast | WCAG AA (4.5:1) in light and dark | Unverified (Lighthouse) |
+| AC-NFR-04 | Full backend test suite | 16 of 16 pass | Verified (last run) |
+
+---
+
+## 9. Sign-off checklist before the demo
+
+- [ ] All **Unverified** items for AC-07, AC-24, AC-26, AC-32, AC-44, AC-55 checked by hand.
+- [ ] AC-16 and AC-17 fixed and covered by tests.
+- [ ] AC-56 resolved.
+- [ ] `python -m pytest backend/tests/ -v` passes.
