@@ -32,8 +32,11 @@ import {
   Radio,
   CheckCheck,
   ChevronRight,
-  Cpu
+  Cpu,
+  Download,
+  Printer
 } from 'lucide-react';
+import { ReportPage } from './ReportPage';
 
 interface ServiceNodeData extends Record<string, unknown> {
   id: string;
@@ -187,7 +190,28 @@ export default function App() {
   const [mitigationData, setMitigationData] = useState<any>(null);
   const [evidenceList, setEvidenceList] = useState<any[]>([]);
   const [reportMarkdown, setReportMarkdown] = useState<string>('');
+  const [reportData, setReportData] = useState<any>(null);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [currentPath, setCurrentPath] = useState<string>(window.location.pathname);
+
+  useEffect(() => {
+    const handlePopState = () => setCurrentPath(window.location.pathname);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const handleDownloadMarkdown = (markdown: string, reportId?: string) => {
+    if (!markdown) return;
+    const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sentineltwin-report-${reportId || 'latest'}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   const loadEnvironment = useCallback(async () => {
     try {
@@ -310,6 +334,7 @@ export default function App() {
     try {
       const res = await fetch('/api/reports/generate', { method: 'POST' });
       const data = await res.json();
+      setReportData(data);
       setReportMarkdown(data.markdown || '');
       setActiveTab('report');
     } catch (err) { console.error('Report error:', err); }
@@ -325,6 +350,7 @@ export default function App() {
       setMitigationData(null);
       setEvidenceList([]);
       setReportMarkdown('');
+      setReportData(null);
       await loadEnvironment();
     } catch (err) { console.error('Reset error:', err); }
     finally { setLoading(false); }
@@ -336,6 +362,24 @@ export default function App() {
     LIVE: { bg: 'bg-accbg border-b border-acc/25', icon: Radio, text: 'Live TinyFish intelligence scan active', badge: 'Live scan', badgeStyle: 'badge-acc' }
   };
   const mc = modeConfig[mode];
+
+  // Route: /reports/:id
+  if (currentPath.startsWith('/reports')) {
+    const reportId = currentPath.replace('/reports/', '').replace('/', '') || 'active';
+    return (
+      <ReportPage
+        reportId={reportId}
+        initialReportData={reportData}
+        onBack={() => {
+          window.history.pushState({}, '', '/');
+          setCurrentPath('/');
+        }}
+        evidenceList={evidenceList}
+        simulationData={simulationData}
+        mitigationData={mitigationData}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen w-screen bg-wash text-ink overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -702,10 +746,10 @@ export default function App() {
                     id="btn-apply-mitigation"
                     onClick={handleSimulateMitigation}
                     disabled={loading}
-                    className="btn btn-success w-full py-2.5"
+                    className="btn btn-success w-full py-2.5 flex items-center justify-center gap-2 text-[12.5px] font-semibold"
                   >
-                    {loading ? <Spinner /> : <Zap className="w-4 h-4" />}
-                    Apply Razorpay failover mitigation
+                    {loading ? <Spinner /> : <Zap className="w-4 h-4 shrink-0" />}
+                    <span>Apply Razorpay failover mitigation</span>
                   </button>
                   {mitigationData && (
                     <div className="bg-white rounded-lg px-3 py-2.5 border border-ok/30 flex items-center justify-between animate-slide-up">
@@ -816,17 +860,59 @@ export default function App() {
             {/* ─── REPORT TAB ───────────────────────────────── */}
             {activeTab === 'report' && (
               <div className="space-y-4 animate-slide-up">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <span className="text-[12.5px] font-semibold text-ink tracking-tight">Evidence-grounded postmortem</span>
-                  <button
-                    id="btn-copy-report"
-                    onClick={() => { navigator.clipboard.writeText(reportMarkdown); setCopySuccess(true); setTimeout(() => setCopySuccess(false), 2000); }}
-                    className={`btn text-[11.5px] py-1.5 px-3 ${copySuccess ? 'btn-success' : 'btn-ghost'} transition-all`}
-                  >
-                    {copySuccess ? <CheckCheck className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                    {copySuccess ? 'Copied!' : 'Copy markdown'}
-                  </button>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      id="btn-download-markdown"
+                      onClick={() => handleDownloadMarkdown(reportMarkdown, reportData?.report_id || 'latest')}
+                      disabled={!reportMarkdown}
+                      className="btn btn-ghost text-[11px] py-1 px-2.5 flex items-center gap-1.5"
+                      title="Download Markdown"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Markdown</span>
+                    </button>
+                    <button
+                      id="btn-download-pdf"
+                      onClick={() => {
+                        const targetId = reportData?.report_id || 'active';
+                        window.history.pushState({}, '', `/reports/${targetId}`);
+                        setCurrentPath(`/reports/${targetId}`);
+                      }}
+                      className="btn btn-primary text-[11px] py-1 px-2.5 flex items-center gap-1.5 font-semibold"
+                      title="Open Printable Report for PDF Download"
+                    >
+                      <Printer className="w-3.5 h-3.5" />
+                      <span>Download PDF</span>
+                    </button>
+                    <button
+                      id="btn-copy-report"
+                      onClick={() => { navigator.clipboard.writeText(reportMarkdown); setCopySuccess(true); setTimeout(() => setCopySuccess(false), 2000); }}
+                      className={`btn text-[11px] py-1 px-2.5 ${copySuccess ? 'btn-success' : 'btn-ghost'} transition-all`}
+                    >
+                      {copySuccess ? <CheckCheck className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copySuccess ? 'Copied' : 'Copy'}</span>
+                    </button>
+                  </div>
                 </div>
+
+                {reportMarkdown && (
+                  <div className="flex items-center justify-between text-[11px] text-ink3 bg-wash px-3 py-1.5 rounded-lg border border-line">
+                    <span className="font-mono text-[10.5px]">/reports/{reportData?.report_id || 'active'}</span>
+                    <button
+                      onClick={() => {
+                        const targetId = reportData?.report_id || 'active';
+                        window.history.pushState({}, '', `/reports/${targetId}`);
+                        setCurrentPath(`/reports/${targetId}`);
+                      }}
+                      className="text-acc hover:underline font-medium inline-flex items-center gap-1"
+                    >
+                      <span>Open full report page</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
 
                 {loading && !reportMarkdown ? (
                   <div className="space-y-3">

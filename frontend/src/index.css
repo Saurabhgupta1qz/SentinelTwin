@@ -8,12 +8,17 @@
   color-scheme: light;
   --paper: #ffffff;
   --wash: #f5f7fb;
+  --wash2: #edf2f7;
   --ink: #17243a;
   --ink2: #66758c;
+  --ink3: #8a99ad;
   --line: #e4e9f1;
+  --line2: #d1d9e6;
   --acc: #315de8;
+  --acc-hover: #2349c2;
   --accbg: #edf2ff;
   --ok: #14805e;
+  --ok-hover: #0d6b4e;
   --okbg: #e9f7f1;
   --warn: #a86108;
   --warnbg: #fff5e5;
@@ -299,3 +304,275 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── Status Pulse & Animations ────────────────────────────── */
+@keyframes pulse-ring {
+  0% { transform: scale(0.85); opacity: 0.8; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes slide-in-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.status-dot-live {
+  position: relative;
+}
+.status-dot-live::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse-ring 1.8s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+
+.animate-slide-up {
+  animation: slide-in-up 0.22s ease-out;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--wash2) 25%, var(--line) 50%, var(--wash2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Tab Bar & Tab Items ──────────────────────────────────── */
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  background: #f1f4f9;
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+
+.tab-item {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  color: var(--ink2);
+  background: transparent;
+  user-select: none;
+}
+
+.tab-item:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.tab-item.active {
+  background: #ffffff;
+  color: var(--ink);
+  border-color: rgba(203, 213, 225, 0.6);
+  box-shadow: 0 1px 3px rgba(18, 32, 56, 0.08), 0 1px 2px rgba(18, 32, 56, 0.04);
+  font-weight: 600;
+}
+
+/* ── Button Utilities ─────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 500;
+  border-radius: 10px;
+  padding: 8px 14px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #315de8 0%, #254ac2 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(49, 93, 232, 0.28);
+}
+.btn-primary:hover {
+  box-shadow: 0 4px 12px rgba(49, 93, 232, 0.38);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  background: #ffffff;
+  color: var(--ink2);
+  border-color: var(--line);
+  box-shadow: var(--shadow-sm);
+}
+.btn-ghost:hover {
+  background: var(--wash);
+  color: var(--ink);
+  border-color: var(--line2);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #14805e 0%, #0d6b4e 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(20, 128, 94, 0.28);
+  border-color: rgba(20, 128, 94, 0.3);
+}
+.btn-success:hover {
+  box-shadow: 0 4px 12px rgba(20, 128, 94, 0.38);
+  transform: translateY(-1px);
+}
+
+.btn-danger-soft {
+  background: var(--badbg);
+  color: var(--bad);
+  border-color: rgba(201, 54, 69, 0.2);
+}
+.btn-danger-soft:hover {
+  background: #ffe4e6;
+  border-color: rgba(201, 54, 69, 0.35);
+}
+
+/* ── Badges ───────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2.5px 8px;
+  border-radius: 9999px;
+  border: 1px solid;
+  line-height: 1.25;
+}
+.badge-ok { background: var(--okbg); color: var(--ok); border-color: rgba(20, 128, 94, 0.2); }
+.badge-warn { background: var(--warnbg); color: var(--warn); border-color: rgba(168, 97, 8, 0.2); }
+.badge-bad { background: var(--badbg); color: var(--bad); border-color: rgba(201, 54, 69, 0.2); }
+.badge-acc { background: var(--accbg); color: var(--acc); border-color: rgba(49, 93, 232, 0.2); }
+.badge-rep { background: var(--repbg); color: var(--rep); border-color: rgba(105, 70, 198, 0.2); }
+.badge-muted { background: var(--wash2); color: var(--ink2); border-color: var(--line); }
+
+/* ── PRINT STYLESHEET FOR REPORT PAGE ─────────────────────── */
+@page {
+  size: A4;
+  margin: 18mm;
+}
+
+@media print {
+  /* Hide non-report UI elements */
+  .no-print,
+  .report-topbar,
+  .report-provenance-banner,
+  .report-actions,
+  .app-header,
+  .tab-bar,
+  .react-flow,
+  .react-flow__controls,
+  button:not(.print-keep),
+  nav,
+  header {
+    display: none !important;
+  }
+
+  /* Reset document flow and colors for ink printing */
+  html,
+  body,
+  #root,
+  .app-shell,
+  .report-page-container {
+    background: #ffffff !important;
+    color: #17243a !important;
+    font-size: 12pt !important;
+    line-height: 1.5 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .printable-report {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #17243a !important;
+  }
+
+  /* Avoid page breaks inside tables, evidence items, and headings */
+  table,
+  tr,
+  td,
+  th,
+  .evidence-item,
+  .report-section,
+  .report-card,
+  .runbook-block {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .section-heading {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* Show full URLs for source links */
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    font-weight: normal;
+    color: #4b5563;
+    word-break: break-all;
+  }
+
+  /* Keep status labels and badges clear and textual */
+  .badge,
+  .provenance-badge,
+  .status-label {
+    border: 1px solid #94a3b8 !important;
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    padding: 2px 6px !important;
+    font-size: 9pt !important;
+    display: inline-block !important;
+  }
+
+  /* Print footer repeated simulation notice */
+  .print-footer-notice {
+    display: block !important;
+    font-size: 9.5pt !important;
+    color: #64748b !important;
+    border-top: 1px solid #cbd5e1 !important;
+    margin-top: 24pt !important;
+    padding-top: 8pt !important;
+    text-align: center !important;
+  }
+}
+
