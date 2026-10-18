@@ -43,6 +43,7 @@ def create_run(target_providers: List[str], mode: str = "LIVE_WEB") -> str:
         "events": [],          # buffered SSE events for late consumers
         "result": None,        # final result dict once complete
         "error": None,
+        "tinyfish_provenance": {"search": "not_run", "fetch": "not_run"},
     }
     return run_id
 
@@ -131,6 +132,11 @@ async def run_investigation(
         search_resp = await tinyfish_service.search_signals(query)
         raw_results = search_resp.get("results", [])
         provenance = search_resp.get("provenance", "fixture")
+        current_search_provenance = run["tinyfish_provenance"]["search"]
+        if current_search_provenance == "not_run":
+            run["tinyfish_provenance"]["search"] = provenance
+        elif current_search_provenance != provenance:
+            run["tinyfish_provenance"]["search"] = "mixed"
 
         _buf(run, "log", {
             "timestamp": _now_iso(),
@@ -169,6 +175,7 @@ async def run_investigation(
             fetch_resp = await tinyfish_service.fetch_status_content(status_page_url)
             fetch_result = fetch_resp.get("fetch_result", {})
             fetch_prov = fetch_resp.get("provenance", "fixture")
+            run["tinyfish_provenance"]["fetch"] = fetch_prov
 
             fetch_evi = map_fetch_result_to_evidence(
                 fetch_result, provenance=fetch_prov, retrieved_at=retrieved_at
@@ -182,6 +189,7 @@ async def run_investigation(
                     "message": f"TinyFetch: status page extracted ({len(fetch_result.get('text', ''))} chars, provenance={fetch_prov})"
                 })
         except Exception as e:
+            run["tinyfish_provenance"]["fetch"] = "error"
             logger.error(f"TinyFetch failed for {status_page_url}: {e}")
             _buf(run, "log", {
                 "timestamp": _now_iso(),
@@ -252,6 +260,7 @@ async def run_investigation(
         "mapped_node_id": mapped_node_id,
         "total_evidence": len(all_evidence),
         "simulation": sim_result,
+        "tinyfish_provenance": run["tinyfish_provenance"],
     }
 
     _buf(run, "complete", {
@@ -259,6 +268,7 @@ async def run_investigation(
         "total_evidence": len(all_evidence),
         "mapped_node_id": mapped_node_id,
         "affected_nodes_count": (sim_result.get("total_affected_services", 0) if sim_result else 0),
+        "tinyfish_provenance": run["tinyfish_provenance"],
     })
 
     _buf(run, "log", {

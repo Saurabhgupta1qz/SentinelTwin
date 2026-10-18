@@ -92,6 +92,7 @@ def map_search_results_to_evidence(
             "retrieved_at": retrieved_at,
             "raw_snippet": item.get("snippet") or "",
             "signal_type": signal_type,
+            "source_api": "TinySearch",
             "verification_grade": grade,
             "is_real_data": provenance == "live"
         })
@@ -129,6 +130,7 @@ def map_fetch_result_to_evidence(
         "retrieved_at": retrieved_at,
         "raw_snippet": snippet,
         "signal_type": signal_type,
+        "source_api": "TinyFetch",
         "verification_grade": grade,
         "is_real_data": provenance == "live",
         "full_text": text   # stored for Claude report grounding; not sent to frontend

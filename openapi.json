@@ -1,0 +1,722 @@
+﻿{
+    "openapi":  "3.1.0",
+    "info":  {
+                 "title":  "SentinelTwin API",
+                 "description":  "Incident Intelligence \u0026 Digital Twin Simulation Platform for AZINHACK \u002726",
+                 "version":  "1.0.0"
+             },
+    "paths":  {
+                  "/api/v1/health":  {
+                                         "get":  {
+                                                     "summary":  "Get Health",
+                                                     "operationId":  "get_health_api_v1_health_get",
+                                                     "responses":  {
+                                                                       "200":  {
+                                                                                   "description":  "Successful Response",
+                                                                                   "content":  {
+                                                                                                   "application/json":  {
+                                                                                                                            "schema":  {
+
+                                                                                                                                       }
+                                                                                                                        }
+                                                                                               }
+                                                                               }
+                                                                   }
+                                                 }
+                                     },
+                  "/health":  {
+                                  "get":  {
+                                              "summary":  "Get Health",
+                                              "operationId":  "get_health_health_get",
+                                              "responses":  {
+                                                                "200":  {
+                                                                            "description":  "Successful Response",
+                                                                            "content":  {
+                                                                                            "application/json":  {
+                                                                                                                     "schema":  {
+
+                                                                                                                                }
+                                                                                                                 }
+                                                                                        }
+                                                                        }
+                                                            }
+                                          }
+                              },
+                  "/api/environment":  {
+                                           "get":  {
+                                                       "summary":  "Get Environment",
+                                                       "operationId":  "get_environment_api_environment_get",
+                                                       "responses":  {
+                                                                         "200":  {
+                                                                                     "description":  "Successful Response",
+                                                                                     "content":  {
+                                                                                                     "application/json":  {
+                                                                                                                              "schema":  {
+
+                                                                                                                                         }
+                                                                                                                          }
+                                                                                                 }
+                                                                                 }
+                                                                     }
+                                                   }
+                                       },
+                  "/api/environment/reset":  {
+                                                 "post":  {
+                                                              "summary":  "Reset Environment",
+                                                              "operationId":  "reset_environment_api_environment_reset_post",
+                                                              "responses":  {
+                                                                                "200":  {
+                                                                                            "description":  "Successful Response",
+                                                                                            "content":  {
+                                                                                                            "application/json":  {
+                                                                                                                                     "schema":  {
+
+                                                                                                                                                }
+                                                                                                                                 }
+                                                                                                        }
+                                                                                        }
+                                                                            }
+                                                          }
+                                             },
+                  "/api/environment/nodes":  {
+                                                 "post":  {
+                                                              "summary":  "Create Or Update Node",
+                                                              "operationId":  "create_or_update_node_api_environment_nodes_post",
+                                                              "requestBody":  {
+                                                                                  "content":  {
+                                                                                                  "application/json":  {
+                                                                                                                           "schema":  {
+                                                                                                                                          "$ref":  "#/components/schemas/ServiceNodeSchema"
+                                                                                                                                      }
+                                                                                                                       }
+                                                                                              },
+                                                                                  "required":  true
+                                                                              },
+                                                              "responses":  {
+                                                                                "200":  {
+                                                                                            "description":  "Successful Response",
+                                                                                            "content":  {
+                                                                                                            "application/json":  {
+                                                                                                                                     "schema":  {
+
+                                                                                                                                                }
+                                                                                                                                 }
+                                                                                                        }
+                                                                                        },
+                                                                                "422":  {
+                                                                                            "description":  "Validation Error",
+                                                                                            "content":  {
+                                                                                                            "application/json":  {
+                                                                                                                                     "schema":  {
+                                                                                                                                                    "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                                }
+                                                                                                                                 }
+                                                                                                        }
+                                                                                        }
+                                                                            }
+                                                          }
+                                             },
+                  "/api/environment/edges":  {
+                                                 "post":  {
+                                                              "summary":  "Create Edge",
+                                                              "operationId":  "create_edge_api_environment_edges_post",
+                                                              "requestBody":  {
+                                                                                  "content":  {
+                                                                                                  "application/json":  {
+                                                                                                                           "schema":  {
+                                                                                                                                          "$ref":  "#/components/schemas/DependencyEdgeSchema"
+                                                                                                                                      }
+                                                                                                                       }
+                                                                                              },
+                                                                                  "required":  true
+                                                                              },
+                                                              "responses":  {
+                                                                                "200":  {
+                                                                                            "description":  "Successful Response",
+                                                                                            "content":  {
+                                                                                                            "application/json":  {
+                                                                                                                                     "schema":  {
+
+                                                                                                                                                }
+                                                                                                                                 }
+                                                                                                        }
+                                                                                        },
+                                                                                "422":  {
+                                                                                            "description":  "Validation Error",
+                                                                                            "content":  {
+                                                                                                            "application/json":  {
+                                                                                                                                     "schema":  {
+                                                                                                                                                    "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                                }
+                                                                                                                                 }
+                                                                                                        }
+                                                                                        }
+                                                                            }
+                                                          }
+                                             },
+                  "/api/investigation/start":  {
+                                                   "post":  {
+                                                                "summary":  "Start Investigation",
+                                                                "description":  "Kick off an async investigation. Returns run_id immediately.",
+                                                                "operationId":  "start_investigation_api_investigation_start_post",
+                                                                "requestBody":  {
+                                                                                    "content":  {
+                                                                                                    "application/json":  {
+                                                                                                                             "schema":  {
+                                                                                                                                            "$ref":  "#/components/schemas/InvestigationStartRequest"
+                                                                                                                                        }
+                                                                                                                         }
+                                                                                                },
+                                                                                    "required":  true
+                                                                                },
+                                                                "responses":  {
+                                                                                  "202":  {
+                                                                                              "description":  "Successful Response",
+                                                                                              "content":  {
+                                                                                                              "application/json":  {
+                                                                                                                                       "schema":  {
+
+                                                                                                                                                  }
+                                                                                                                                   }
+                                                                                                          }
+                                                                                          },
+                                                                                  "422":  {
+                                                                                              "description":  "Validation Error",
+                                                                                              "content":  {
+                                                                                                              "application/json":  {
+                                                                                                                                       "schema":  {
+                                                                                                                                                      "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                                  }
+                                                                                                                                   }
+                                                                                                          }
+                                                                                          }
+                                                                              }
+                                                            }
+                                               },
+                  "/api/investigation/stream/{run_id}":  {
+                                                             "get":  {
+                                                                         "summary":  "Stream Investigation",
+                                                                         "description":  "SSE stream of investigation progress events.",
+                                                                         "operationId":  "stream_investigation_api_investigation_stream__run_id__get",
+                                                                         "parameters":  [
+                                                                                            {
+                                                                                                "name":  "run_id",
+                                                                                                "in":  "path",
+                                                                                                "required":  true,
+                                                                                                "schema":  {
+                                                                                                               "type":  "string",
+                                                                                                               "title":  "Run Id"
+                                                                                                           }
+                                                                                            }
+                                                                                        ],
+                                                                         "responses":  {
+                                                                                           "200":  {
+                                                                                                       "description":  "Successful Response",
+                                                                                                       "content":  {
+                                                                                                                       "application/json":  {
+                                                                                                                                                "schema":  {
+
+                                                                                                                                                           }
+                                                                                                                                            }
+                                                                                                                   }
+                                                                                                   },
+                                                                                           "422":  {
+                                                                                                       "description":  "Validation Error",
+                                                                                                       "content":  {
+                                                                                                                       "application/json":  {
+                                                                                                                                                "schema":  {
+                                                                                                                                                               "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                                           }
+                                                                                                                                            }
+                                                                                                                   }
+                                                                                                   }
+                                                                                       }
+                                                                     }
+                                                         },
+                  "/api/investigation/replay":  {
+                                                    "post":  {
+                                                                 "summary":  "Trigger Historical Replay",
+                                                                 "operationId":  "trigger_historical_replay_api_investigation_replay_post",
+                                                                 "responses":  {
+                                                                                   "200":  {
+                                                                                               "description":  "Successful Response",
+                                                                                               "content":  {
+                                                                                                               "application/json":  {
+                                                                                                                                        "schema":  {
+
+                                                                                                                                                   }
+                                                                                                                                    }
+                                                                                                           }
+                                                                                           }
+                                                                               }
+                                                             }
+                                                },
+                  "/api/investigation/live":  {
+                                                  "post":  {
+                                                               "summary":  "Trigger Live Investigation",
+                                                               "operationId":  "trigger_live_investigation_api_investigation_live_post",
+                                                               "parameters":  [
+                                                                                  {
+                                                                                      "name":  "provider_name",
+                                                                                      "in":  "query",
+                                                                                      "required":  false,
+                                                                                      "schema":  {
+                                                                                                     "type":  "string",
+                                                                                                     "default":  "Stripe, Inc.",
+                                                                                                     "title":  "Provider Name"
+                                                                                                 }
+                                                                                  }
+                                                                              ],
+                                                               "responses":  {
+                                                                                 "200":  {
+                                                                                             "description":  "Successful Response",
+                                                                                             "content":  {
+                                                                                                             "application/json":  {
+                                                                                                                                      "schema":  {
+
+                                                                                                                                                 }
+                                                                                                                                  }
+                                                                                                         }
+                                                                                         },
+                                                                                 "422":  {
+                                                                                             "description":  "Validation Error",
+                                                                                             "content":  {
+                                                                                                             "application/json":  {
+                                                                                                                                      "schema":  {
+                                                                                                                                                     "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                                 }
+                                                                                                                                  }
+                                                                                                         }
+                                                                                         }
+                                                                             }
+                                                           }
+                                              },
+                  "/api/investigation/evidence":  {
+                                                      "get":  {
+                                                                  "summary":  "Get Investigation Evidence",
+                                                                  "operationId":  "get_investigation_evidence_api_investigation_evidence_get",
+                                                                  "responses":  {
+                                                                                    "200":  {
+                                                                                                "description":  "Successful Response",
+                                                                                                "content":  {
+                                                                                                                "application/json":  {
+                                                                                                                                         "schema":  {
+
+                                                                                                                                                    }
+                                                                                                                                     }
+                                                                                                            }
+                                                                                            }
+                                                                                }
+                                                              }
+                                                  },
+                  "/api/simulation/propagate":  {
+                                                    "post":  {
+                                                                 "summary":  "Simulate Failure",
+                                                                 "operationId":  "simulate_failure_api_simulation_propagate_post",
+                                                                 "requestBody":  {
+                                                                                     "content":  {
+                                                                                                     "application/json":  {
+                                                                                                                              "schema":  {
+                                                                                                                                             "$ref":  "#/components/schemas/PropagateRequest"
+                                                                                                                                         }
+                                                                                                                          }
+                                                                                                 },
+                                                                                     "required":  true
+                                                                                 },
+                                                                 "responses":  {
+                                                                                   "200":  {
+                                                                                               "description":  "Successful Response",
+                                                                                               "content":  {
+                                                                                                               "application/json":  {
+                                                                                                                                        "schema":  {
+
+                                                                                                                                                   }
+                                                                                                                                    }
+                                                                                                           }
+                                                                                           },
+                                                                                   "422":  {
+                                                                                               "description":  "Validation Error",
+                                                                                               "content":  {
+                                                                                                               "application/json":  {
+                                                                                                                                        "schema":  {
+                                                                                                                                                       "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                                   }
+                                                                                                                                    }
+                                                                                                           }
+                                                                                           }
+                                                                               }
+                                                             }
+                                                },
+                  "/api/simulation/mitigate":  {
+                                                   "post":  {
+                                                                "summary":  "Simulate Mitigation",
+                                                                "operationId":  "simulate_mitigation_api_simulation_mitigate_post",
+                                                                "requestBody":  {
+                                                                                    "content":  {
+                                                                                                    "application/json":  {
+                                                                                                                             "schema":  {
+                                                                                                                                            "$ref":  "#/components/schemas/MitigateRequest"
+                                                                                                                                        }
+                                                                                                                         }
+                                                                                                },
+                                                                                    "required":  true
+                                                                                },
+                                                                "responses":  {
+                                                                                  "200":  {
+                                                                                              "description":  "Successful Response",
+                                                                                              "content":  {
+                                                                                                              "application/json":  {
+                                                                                                                                       "schema":  {
+
+                                                                                                                                                  }
+                                                                                                                                   }
+                                                                                                          }
+                                                                                          },
+                                                                                  "422":  {
+                                                                                              "description":  "Validation Error",
+                                                                                              "content":  {
+                                                                                                              "application/json":  {
+                                                                                                                                       "schema":  {
+                                                                                                                                                      "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                                  }
+                                                                                                                                   }
+                                                                                                          }
+                                                                                          }
+                                                                              }
+                                                            }
+                                               },
+                  "/api/reports/generate":  {
+                                                "post":  {
+                                                             "summary":  "Generate Report",
+                                                             "operationId":  "generate_report_api_reports_generate_post",
+                                                             "requestBody":  {
+                                                                                 "content":  {
+                                                                                                 "application/json":  {
+                                                                                                                          "schema":  {
+                                                                                                                                         "anyOf":  [
+                                                                                                                                                       {
+                                                                                                                                                           "$ref":  "#/components/schemas/ReportRequest"
+                                                                                                                                                       },
+                                                                                                                                                       {
+                                                                                                                                                           "type":  "null"
+                                                                                                                                                       }
+                                                                                                                                                   ],
+                                                                                                                                         "title":  "Req"
+                                                                                                                                     }
+                                                                                                                      }
+                                                                                             }
+                                                                             },
+                                                             "responses":  {
+                                                                               "200":  {
+                                                                                           "description":  "Successful Response",
+                                                                                           "content":  {
+                                                                                                           "application/json":  {
+                                                                                                                                    "schema":  {
+
+                                                                                                                                               }
+                                                                                                                                }
+                                                                                                       }
+                                                                                       },
+                                                                               "422":  {
+                                                                                           "description":  "Validation Error",
+                                                                                           "content":  {
+                                                                                                           "application/json":  {
+                                                                                                                                    "schema":  {
+                                                                                                                                                   "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                               }
+                                                                                                                                }
+                                                                                                       }
+                                                                                       }
+                                                                           }
+                                                         }
+                                            }
+              },
+    "components":  {
+                       "schemas":  {
+                                       "DependencyEdgeSchema":  {
+                                                                    "properties":  {
+                                                                                       "id":  {
+                                                                                                  "type":  "string",
+                                                                                                  "title":  "Id"
+                                                                                              },
+                                                                                       "source":  {
+                                                                                                      "type":  "string",
+                                                                                                      "title":  "Source"
+                                                                                                  },
+                                                                                       "target":  {
+                                                                                                      "type":  "string",
+                                                                                                      "title":  "Target"
+                                                                                                  },
+                                                                                       "is_hard_dependency":  {
+                                                                                                                  "type":  "boolean",
+                                                                                                                  "title":  "Is Hard Dependency",
+                                                                                                                  "default":  true
+                                                                                                              },
+                                                                                       "label":  {
+                                                                                                     "anyOf":  [
+                                                                                                                   {
+                                                                                                                       "type":  "string"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "type":  "null"
+                                                                                                                   }
+                                                                                                               ],
+                                                                                                     "title":  "Label"
+                                                                                                 }
+                                                                                   },
+                                                                    "type":  "object",
+                                                                    "required":  [
+                                                                                     "id",
+                                                                                     "source",
+                                                                                     "target"
+                                                                                 ],
+                                                                    "title":  "DependencyEdgeSchema"
+                                                                },
+                                       "HTTPValidationError":  {
+                                                                   "properties":  {
+                                                                                      "detail":  {
+                                                                                                     "items":  {
+                                                                                                                   "$ref":  "#/components/schemas/ValidationError"
+                                                                                                               },
+                                                                                                     "type":  "array",
+                                                                                                     "title":  "Detail"
+                                                                                                 }
+                                                                                  },
+                                                                   "type":  "object",
+                                                                   "title":  "HTTPValidationError"
+                                                               },
+                                       "InvestigationStartRequest":  {
+                                                                         "properties":  {
+                                                                                            "mode":  {
+                                                                                                         "anyOf":  [
+                                                                                                                       {
+                                                                                                                           "type":  "string"
+                                                                                                                       },
+                                                                                                                       {
+                                                                                                                           "type":  "null"
+                                                                                                                       }
+                                                                                                                   ],
+                                                                                                         "title":  "Mode",
+                                                                                                         "default":  "LIVE_WEB"
+                                                                                                     },
+                                                                                            "target_providers":  {
+                                                                                                                     "anyOf":  [
+                                                                                                                                   {
+                                                                                                                                       "items":  {
+                                                                                                                                                     "type":  "string"
+                                                                                                                                                 },
+                                                                                                                                       "type":  "array"
+                                                                                                                                   },
+                                                                                                                                   {
+                                                                                                                                       "type":  "null"
+                                                                                                                                   }
+                                                                                                                               ],
+                                                                                                                     "title":  "Target Providers"
+                                                                                                                 }
+                                                                                        },
+                                                                         "type":  "object",
+                                                                         "title":  "InvestigationStartRequest"
+                                                                     },
+                                       "MitigateRequest":  {
+                                                               "properties":  {
+                                                                                  "failed_node_id":  {
+                                                                                                         "type":  "string",
+                                                                                                         "title":  "Failed Node Id"
+                                                                                                     },
+                                                                                  "fallback_node_id":  {
+                                                                                                           "anyOf":  [
+                                                                                                                         {
+                                                                                                                             "type":  "string"
+                                                                                                                         },
+                                                                                                                         {
+                                                                                                                             "type":  "null"
+                                                                                                                         }
+                                                                                                                     ],
+                                                                                                           "title":  "Fallback Node Id"
+                                                                                                       },
+                                                                                  "severity_factor":  {
+                                                                                                          "type":  "number",
+                                                                                                          "title":  "Severity Factor",
+                                                                                                          "default":  1.0
+                                                                                                      }
+                                                                              },
+                                                               "type":  "object",
+                                                               "required":  [
+                                                                                "failed_node_id"
+                                                                            ],
+                                                               "title":  "MitigateRequest"
+                                                           },
+                                       "PropagateRequest":  {
+                                                                "properties":  {
+                                                                                   "root_cause_node_id":  {
+                                                                                                              "type":  "string",
+                                                                                                              "title":  "Root Cause Node Id"
+                                                                                                          },
+                                                                                   "severity_factor":  {
+                                                                                                           "type":  "number",
+                                                                                                           "title":  "Severity Factor",
+                                                                                                           "default":  1.0
+                                                                                                       }
+                                                                               },
+                                                                "type":  "object",
+                                                                "required":  [
+                                                                                 "root_cause_node_id"
+                                                                             ],
+                                                                "title":  "PropagateRequest"
+                                                            },
+                                       "ReportRequest":  {
+                                                             "properties":  {
+                                                                                "incident_id":  {
+                                                                                                    "anyOf":  [
+                                                                                                                  {
+                                                                                                                      "type":  "string"
+                                                                                                                  },
+                                                                                                                  {
+                                                                                                                      "type":  "null"
+                                                                                                                  }
+                                                                                                              ],
+                                                                                                    "title":  "Incident Id"
+                                                                                                },
+                                                                                "mode":  {
+                                                                                             "anyOf":  [
+                                                                                                           {
+                                                                                                               "type":  "string"
+                                                                                                           },
+                                                                                                           {
+                                                                                                               "type":  "null"
+                                                                                                           }
+                                                                                                       ],
+                                                                                             "title":  "Mode",
+                                                                                             "default":  "template"
+                                                                                         }
+                                                                            },
+                                                             "type":  "object",
+                                                             "title":  "ReportRequest"
+                                                         },
+                                       "ServiceNodeSchema":  {
+                                                                 "properties":  {
+                                                                                    "id":  {
+                                                                                               "type":  "string",
+                                                                                               "title":  "Id"
+                                                                                           },
+                                                                                    "name":  {
+                                                                                                 "type":  "string",
+                                                                                                 "title":  "Name"
+                                                                                             },
+                                                                                    "category":  {
+                                                                                                     "type":  "string",
+                                                                                                     "title":  "Category",
+                                                                                                     "default":  "API_BACKEND"
+                                                                                                 },
+                                                                                    "criticality":  {
+                                                                                                        "type":  "string",
+                                                                                                        "title":  "Criticality",
+                                                                                                        "default":  "HIGH"
+                                                                                                    },
+                                                                                    "weight":  {
+                                                                                                   "type":  "number",
+                                                                                                   "title":  "Weight",
+                                                                                                   "default":  1.0
+                                                                                               },
+                                                                                    "provider_name":  {
+                                                                                                          "type":  "string",
+                                                                                                          "title":  "Provider Name",
+                                                                                                          "default":  "PayNest Internal"
+                                                                                                      },
+                                                                                    "status_url":  {
+                                                                                                       "anyOf":  [
+                                                                                                                     {
+                                                                                                                         "type":  "string"
+                                                                                                                     },
+                                                                                                                     {
+                                                                                                                         "type":  "null"
+                                                                                                                     }
+                                                                                                                 ],
+                                                                                                       "title":  "Status Url"
+                                                                                                   },
+                                                                                    "fallback_node_id":  {
+                                                                                                             "anyOf":  [
+                                                                                                                           {
+                                                                                                                               "type":  "string"
+                                                                                                                           },
+                                                                                                                           {
+                                                                                                                               "type":  "null"
+                                                                                                                           }
+                                                                                                                       ],
+                                                                                                             "title":  "Fallback Node Id"
+                                                                                                         },
+                                                                                    "baseline_users":  {
+                                                                                                           "type":  "integer",
+                                                                                                           "title":  "Baseline Users",
+                                                                                                           "default":  0
+                                                                                                       },
+                                                                                    "status":  {
+                                                                                                   "type":  "string",
+                                                                                                   "title":  "Status",
+                                                                                                   "default":  "HEALTHY"
+                                                                                               },
+                                                                                    "position":  {
+                                                                                                     "anyOf":  [
+                                                                                                                   {
+                                                                                                                       "additionalProperties":  {
+                                                                                                                                                    "type":  "number"
+                                                                                                                                                },
+                                                                                                                       "type":  "object"
+                                                                                                                   },
+                                                                                                                   {
+                                                                                                                       "type":  "null"
+                                                                                                                   }
+                                                                                                               ],
+                                                                                                     "title":  "Position"
+                                                                                                 }
+                                                                                },
+                                                                 "type":  "object",
+                                                                 "required":  [
+                                                                                  "id",
+                                                                                  "name"
+                                                                              ],
+                                                                 "title":  "ServiceNodeSchema"
+                                                             },
+                                       "ValidationError":  {
+                                                               "properties":  {
+                                                                                  "loc":  {
+                                                                                              "items":  {
+                                                                                                            "anyOf":  [
+                                                                                                                          {
+                                                                                                                              "type":  "string"
+                                                                                                                          },
+                                                                                                                          {
+                                                                                                                              "type":  "integer"
+                                                                                                                          }
+                                                                                                                      ]
+                                                                                                        },
+                                                                                              "type":  "array",
+                                                                                              "title":  "Location"
+                                                                                          },
+                                                                                  "msg":  {
+                                                                                              "type":  "string",
+                                                                                              "title":  "Message"
+                                                                                          },
+                                                                                  "type":  {
+                                                                                               "type":  "string",
+                                                                                               "title":  "Error Type"
+                                                                                           },
+                                                                                  "input":  {
+                                                                                                "title":  "Input"
+                                                                                            },
+                                                                                  "ctx":  {
+                                                                                              "type":  "object",
+                                                                                              "title":  "Context"
+                                                                                          }
+                                                                              },
+                                                               "type":  "object",
+                                                               "required":  [
+                                                                                "loc",
+                                                                                "msg",
+                                                                                "type"
+                                                                            ],
+                                                               "title":  "ValidationError"
+                                                           }
+                                   }
+                   }
+}

@@ -189,6 +189,7 @@ export default function App() {
   const [simulationData, setSimulationData] = useState<any>(null);
   const [mitigationData, setMitigationData] = useState<any>(null);
   const [evidenceList, setEvidenceList] = useState<any[]>([]);
+  const [tinyfishProvenance, setTinyfishProvenance] = useState<{ search: string; fetch: string } | null>(null);
   const [reportMarkdown, setReportMarkdown] = useState<string>('');
   const [reportData, setReportData] = useState<any>(null);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -242,6 +243,7 @@ export default function App() {
       setMode('REPLAY');
       setSimulationData(data.simulation);
       setMitigationData(null);
+      setTinyfishProvenance(null);
       const evRes = await fetch('/api/investigation/evidence');
       const evData = await evRes.json();
       setEvidenceList(evData.evidence_items || []);
@@ -268,6 +270,7 @@ export default function App() {
       setMode('LIVE');
       setSimulationData(data.simulation);
       setMitigationData(null);
+      setTinyfishProvenance(data.tinyfish_provenance || { search: data.provenance || 'unknown', fetch: 'unknown' });
       setEvidenceList(data.incident.evidence_items || []);
       setNodes(prev => prev.map(node => {
         const isRoot = node.id === data.incident.mapped_node_id;
@@ -349,6 +352,7 @@ export default function App() {
       setSimulationData(null);
       setMitigationData(null);
       setEvidenceList([]);
+      setTinyfishProvenance(null);
       setReportMarkdown('');
       setReportData(null);
       await loadEnvironment();
@@ -359,7 +363,13 @@ export default function App() {
   const modeConfig = {
     IDLE: null,
     REPLAY: { bg: 'bg-repbg border-b border-rep/25', icon: History, text: 'Historical incident replay — not a live outage', badge: 'Provenance: historical replay', badgeStyle: 'badge-rep' },
-    LIVE: { bg: 'bg-accbg border-b border-acc/25', icon: Radio, text: 'Live TinyFish intelligence scan active', badge: 'Live scan', badgeStyle: 'badge-acc' }
+    LIVE: {
+      bg: 'bg-accbg border-b border-acc/25',
+      icon: Radio,
+      text: 'TinyFish investigation complete',
+      badge: `TinySearch ${tinyfishProvenance?.search || 'unknown'} · TinyFetch ${tinyfishProvenance?.fetch || 'unknown'}`,
+      badgeStyle: tinyfishProvenance?.search === 'live' && tinyfishProvenance?.fetch === 'live' ? 'badge-acc' : 'badge-warn'
+    }
   };
   const mc = modeConfig[mode];
 
@@ -824,8 +834,8 @@ export default function App() {
                         style={{ animationDelay: `${idx * 60}ms` }}
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <span className="badge badge-ok text-[10.5px]">
-                            {item.verification_grade ? item.verification_grade.toLowerCase().replace('_', ' ') : 'official confirmed'}
+                          <span className={`badge ${item.is_real_data ? 'badge-ok' : 'badge-warn'} text-[10.5px]`}>
+                            {item.source_api || 'External signal'} · {item.is_real_data ? 'live' : 'fixture'} · {item.verification_grade ? item.verification_grade.toLowerCase().replace('_', ' ') : 'ungraded'}
                           </span>
                           <span className="text-[11px] text-ink3 tabular-nums">
                             {item.published_at || 'Recent'}

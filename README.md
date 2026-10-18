@@ -85,6 +85,10 @@ npm run dev
 3. **SSRF Protection:** Built-in IP filter blocks requests to loopback (`127.0.0.0/8`, `::1`), private RFC 1918 subnets, and cloud instance metadata (`169.254.169.254`).
 4. **Never Treat COMPLETED or Empty as Success:** TinyFish results must be non-empty; otherwise, the system seamlessly falls back to verified offline fixtures.
 
+## TinyFish Submission Demo
+
+In the dashboard, run **Live scan (TinyFish)** and open the Evidence tab. The backend sends a provider-specific incident query to TinySearch, then fetches the matched provider's configured status page with TinyFetch. The evidence cards identify the source API and whether each result is live or fixture-backed; the banner reports TinySearch and TinyFetch provenance separately. Search results and fetched status-page text feed the incident evidence used by the impact simulation. With no valid `TINYFISH_API_KEY` or an unavailable API, the same flow remains demonstrable with explicitly labeled local fixtures.
+
 ---
 
 ## 👥 Hackathon Team & Delivery

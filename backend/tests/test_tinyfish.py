@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from backend.app.main import app
+from backend.app.main import app, tinyfish
 from unittest.mock import patch
 from backend.app.services.tinyfish_client import (
     TinyFishService, SSRFSecurityException, validate_url_for_ssrf
@@ -46,11 +46,38 @@ def test_tinyfish_service_offline_fixture_fallback():
     assert res_fetch["provenance"] == "fixture"
     assert "Stripe System Status" in res_fetch["fetch_result"]["text"]
 
-def test_live_investigation_endpoint():
+def test_live_investigation_endpoint_uses_search_and_fetch(monkeypatch):
+    async def fake_search(query):
+        return {
+            "results": [{
+                "title": "Stripe incident notice",
+                "url": "https://status.stripe.com/incidents/example",
+                "snippet": "Elevated payment errors",
+                "site_name": "status.stripe.com",
+            }],
+            "provenance": "live",
+        }
+
+    async def fake_fetch(url):
+        assert url == "https://status.stripe.com"
+        return {
+            "fetch_result": {
+                "url": url,
+                "title": "Stripe System Status",
+                "text": "Stripe API is degraded.",
+            },
+            "provenance": "fixture",
+        }
+
+    monkeypatch.setattr(tinyfish, "search_signals", fake_search)
+    monkeypatch.setattr(tinyfish, "fetch_status_content", fake_fetch)
     res = client.post("/api/investigation/live?provider_name=Stripe%2C%20Inc.")
     assert res.status_code == 200
     data = res.json()
-    assert data["provenance"] in ["live", "fixture"]
+    assert data["provenance"] == "live"
+    assert data["tinyfish_provenance"] == {"search": "live", "fetch": "fixture"}
     assert data["incident"]["mapped_node_id"] == "stripe-primary"
-    assert len(data["incident"]["evidence_items"]) >= 1
+    evidence = data["incident"]["evidence_items"]
+    assert {item["source_api"] for item in evidence} == {"TinySearch", "TinyFetch"}
+    assert all("full_text" not in item for item in evidence)
     assert data["simulation"]["weighted_impact_score"] == 23.2

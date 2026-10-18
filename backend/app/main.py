@@ -152,53 +152,25 @@ async def trigger_historical_replay():
 
 @app.post("/api/investigation/live")
 async def trigger_live_investigation(provider_name: str = "Stripe, Inc."):
-    query = f"{provider_name} status outage incident degradation"
-    search_res = await tinyfish.search_signals(query)
-    
-    # Extract evidence items from results
-    evidence_items = []
-    for item in search_res.get("results", []):
-        evidence_items.append({
-            "id": f"evi-{abs(hash(item.get('url', '')))}",
-            "source_title": item.get("title", "Incident Advisory"),
-            "source_url": item.get("url", "https://status.stripe.com"),
-            "publisher": item.get("publisher", "web"),
-            "published_at": item.get("published_date", "2026-10-18T08:30:00Z"),
-            "retrieved_at": "2026-10-18T08:35:00Z",
-            "raw_snippet": item.get("snippet", ""),
-            "signal_type": "LIVE_SIGNAL",
-            "verification_grade": "NEWS_CORROBORATED" if search_res.get("provenance") == "live" else "FIXTURE_FALLBACK",
-            "is_real_data": search_res.get("provenance") == "live"
-        })
-
-    # Store active incident in memory
-    store.active_incident = {
-        "incident_id": f"inc-{abs(hash(query))}",
-        "provider_name": provider_name,
-        "mapped_node_id": "stripe-primary",
-        "match_confidence": 0.95,
-        "match_rationale": f"Matched provider '{provider_name}' to node 'stripe-primary'",
-        "summary": f"Detected degradation signals for {provider_name}",
-        "severity": "CRITICAL",
-        "incident_status": "IDENTIFIED",
-        "is_historical_replay": False,
-        "first_observed_at": "2026-10-18T08:30:00Z",
-        "evidence_items": evidence_items
+    run_id = create_run([provider_name], mode="LIVE_WEB")
+    await run_investigation(run_id, tinyfish, store)
+    run = get_run(run_id) or {}
+    incident = store.active_incident or {}
+    incident_response = {
+        **incident,
+        "evidence_items": [
+            {key: value for key, value in item.items() if key != "full_text"}
+            for item in incident.get("evidence_items", [])
+        ],
     }
-
-    # Mark node degraded in graph
-    for n in store.environment["nodes"]:
-        if n["id"] == "stripe-primary":
-            n["status"] = "FAILED"
-    store.engine = store.engine.__class__(store.environment)
-
-    sim = store.run_propagation("stripe-primary", severity=1.0)
+    run_result = run.get("result") or {}
 
     return {
         "message": "Live investigation completed",
-        "provenance": search_res.get("provenance", "fixture"),
-        "incident": store.active_incident,
-        "simulation": sim
+        "provenance": run.get("tinyfish_provenance", {}).get("search", "fixture"),
+        "tinyfish_provenance": run.get("tinyfish_provenance", {}),
+        "incident": incident_response,
+        "simulation": run_result.get("simulation")
     }
 
 @app.get("/api/investigation/evidence")
